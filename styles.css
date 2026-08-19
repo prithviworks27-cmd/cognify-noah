@@ -1,0 +1,103 @@
+/* Cognify - NOAH Ultron Theme Styles */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
+
+:root {
+    --bg-dark: #07080c;
+    --bg-card: #0d0f18;
+    --ultron-red: #ff2a5f;
+    --ultron-crimson: #ff003c;
+    --ultron-cyan: #00f0ff;
+    --ultron-gold: #ffb703;
+}
+
+body {
+    font-family: 'Outfit', sans-serif;
+    background-color: var(--bg-dark);
+    color: #f1f5f9;
+    overflow-x: hidden;
+}
+
+code, .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Glassmorphism Cards */
+.glass-card {
+    background: rgba(13, 15, 24, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 42, 95, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+}
+
+.glass-card-cyan {
+    background: rgba(13, 15, 24, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(0, 240, 255, 0.25);
+    box-shadow: 0 8px 32px 0 rgba(0, 240, 255, 0.1);
+}
+
+/* Ultron Text Glow */
+.text-ultron-glow {
+    text-shadow: 0 0 12px rgba(255, 42, 95, 0.7), 0 0 24px rgba(255, 0, 60, 0.4);
+}
+
+.text-cyan-glow {
+    text-shadow: 0 0 12px rgba(0, 240, 255, 0.7), 0 0 24px rgba(0, 180, 216, 0.4);
+}
+
+/* Glowing Buttons */
+.btn-ultron {
+    background: linear-gradient(135deg, #ff003c 0%, #ff2a5f 50%, #c1121f 100%);
+    box-shadow: 0 0 20px rgba(255, 42, 95, 0.4);
+    transition: all 0.3s ease;
+}
+
+.btn-ultron:hover {
+    box-shadow: 0 0 30px rgba(255, 42, 95, 0.7);
+    transform: translateY(-2px);
+}
+
+/* Animations */
+@keyframes pulseGlow {
+    0%, 100% {
+        box-shadow: 0 0 15px rgba(255, 42, 95, 0.4), inset 0 0 15px rgba(255, 42, 95, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 35px rgba(255, 42, 95, 0.8), inset 0 0 25px rgba(255, 42, 95, 0.4);
+    }
+}
+
+.animate-pulse-glow {
+    animation: pulseGlow 3s infinite ease-in-out;
+}
+
+@keyframes floatAnim {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+}
+
+.animate-float {
+    animation: floatAnim 4s infinite ease-in-out;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #07080c;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 42, 95, 0.4);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 42, 95, 0.8);
+}
