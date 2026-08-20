@@ -156,10 +156,10 @@ class AppController {
                 userBadge.className = "flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/60 border border-cyan-500/40 text-xs font-mono";
             } else {
                 userBadge.innerHTML = `
-                    <span class="w-2 h-2 rounded-full bg-rose-400"></span>
+                    <span class="w-2 h-2 rounded-full bg-blue-400"></span>
                     <span>Student: <strong>${currentUser.studentName}</strong> (${currentUser.gradeLevel})</span>
                 `;
-                userBadge.className = "flex items-center gap-2 px-3 py-1 rounded-full bg-rose-950/60 border border-rose-500/40 text-xs text-rose-300 font-mono";
+                userBadge.className = "flex items-center gap-2 px-3 py-1 rounded-full bg-blue-950/60 border border-blue-500/40 text-xs text-blue-300 font-mono";
             }
         }
 
@@ -272,16 +272,16 @@ class AppController {
 
         dropZone.addEventListener('dragover', (e) => {
             e.preventDefault();
-            dropZone.classList.add('border-red-500', 'bg-red-950/20');
+            dropZone.classList.add('border-blue-500', 'bg-blue-950/20');
         });
 
         dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('border-red-500', 'bg-red-950/20');
+            dropZone.classList.remove('border-blue-500', 'bg-blue-950/20');
         });
 
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
-            dropZone.classList.remove('border-red-500', 'bg-red-950/20');
+            dropZone.classList.remove('border-blue-500', 'bg-blue-950/20');
             if (e.dataTransfer.files && e.dataTransfer.files[0]) {
                 this.handleFileSelected(e.dataTransfer.files[0]);
             }
@@ -344,7 +344,7 @@ class AppController {
             qList.innerHTML = parsedData.questions.map((q, idx) => `
                 <div class="p-4 rounded-xl bg-gray-950 border border-gray-800 space-y-2">
                     <div class="flex items-center justify-between text-xs font-mono">
-                        <span class="text-red-400 font-bold">NOAH Question ${idx + 1}:</span>
+                        <span class="text-blue-400 font-bold">NOAH Question ${idx + 1}:</span>
                         <span class="px-2 py-0.5 rounded bg-gray-900 text-cyan-300 font-mono text-[10px]">Topic: ${q.topicTag}</span>
                     </div>
                     <p class="text-sm text-white font-medium">${q.text}</p>
@@ -418,10 +418,10 @@ class AppController {
                 `;
             } else {
                 studentPapersList.innerHTML = gradePapers.map(paper => `
-                    <div class="glass-card p-6 rounded-2xl border border-rose-500/30 hover:border-rose-500 transition duration-300 flex flex-col justify-between">
+                    <div class="glass-card p-6 rounded-2xl border border-blue-500/30 hover:border-blue-500 transition duration-300 flex flex-col justify-between">
                         <div>
                             <div class="flex items-center justify-between mb-3">
-                                <span class="text-xs px-2.5 py-1 rounded bg-rose-950 text-rose-400 font-mono border border-rose-500/30 font-bold">${paper.gradeLevel}</span>
+                                <span class="text-xs px-2.5 py-1 rounded bg-blue-950 text-blue-400 font-mono border border-blue-500/30 font-bold">${paper.gradeLevel}</span>
                                 <span class="text-xs text-gray-400 font-mono">${paper.questions.length} Oral Questions</span>
                             </div>
                             <h4 class="text-xl font-bold text-white mb-2">${paper.title}</h4>
@@ -462,7 +462,7 @@ class AppController {
                             <span class="text-xs text-gray-500 font-mono">${r.date}</span>
                         </div>
                         <div class="text-right">
-                            <span class="text-lg font-black ${r.score >= 60 ? 'text-emerald-400' : 'text-rose-400'}">${r.score}%</span>
+                            <span class="text-lg font-black ${r.score >= 60 ? 'text-emerald-400' : 'text-blue-400'}">${r.score}%</span>
                             <span class="block text-[10px] uppercase font-mono text-gray-400">${r.status}</span>
                         </div>
                     </div>
@@ -598,7 +598,7 @@ class AppController {
             feedbackAlert.className = `p-4 rounded-xl border mb-4 transition-all ${
                 gradeResult.status === 'correct' ? 'bg-emerald-950/60 border-emerald-500/50 text-emerald-300' :
                 gradeResult.status === 'partially_correct' ? 'bg-amber-950/60 border-amber-500/50 text-amber-300' :
-                'bg-rose-950/60 border-rose-500/50 text-rose-300'
+                'bg-blue-950/60 border-blue-500/50 text-blue-300'
             }`;
             feedbackAlert.innerHTML = `
                 <div class="font-bold flex items-center gap-2 mb-1">
@@ -606,7 +606,7 @@ class AppController {
                     <span class="uppercase tracking-wider text-xs px-2 py-0.5 rounded font-mono ${
                         gradeResult.status === 'correct' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' :
                         gradeResult.status === 'partially_correct' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40' :
-                        'bg-rose-500/20 text-rose-400 border border-rose-500/40'
+                        'bg-blue-500/20 text-blue-400 border border-blue-500/40'
                     }">${gradeResult.status.replace('_', ' ')} (+${gradeResult.score} pts)</span>
                 </div>
                 <p class="text-sm">${gradeResult.feedback}</p>
@@ -701,7 +701,7 @@ class AppController {
         document.getElementById('resultScoreDisplay').innerText = `${resultRecord.score}%`;
         document.getElementById('resultStatusBadge').innerText = resultRecord.status;
         document.getElementById('resultStatusBadge').className = `px-3 py-1 rounded-full text-xs font-mono font-bold ${
-            resultRecord.status === 'Pass' ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/40' : 'bg-rose-950 text-rose-400 border border-rose-500/40'
+            resultRecord.status === 'Pass' ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/40' : 'bg-blue-950 text-blue-400 border border-blue-500/40'
         }`;
 
         document.getElementById('resultCorrectCount').innerText = correctCount;
@@ -711,7 +711,7 @@ class AppController {
         const topicContainer = document.getElementById('resultStrugglingTopics');
         if (resultRecord.strugglingTopics.length > 0) {
             topicContainer.innerHTML = resultRecord.strugglingTopics.map(t => `
-                <span class="px-3 py-1 rounded-lg bg-rose-950/60 border border-rose-500/40 text-rose-300 text-xs font-mono">${t}</span>
+                <span class="px-3 py-1 rounded-lg bg-blue-950/60 border border-blue-500/40 text-blue-300 text-xs font-mono">${t}</span>
             `).join('');
         } else {
             topicContainer.innerHTML = `<span class="text-xs text-emerald-400 font-mono">None! Exceptional mastery across all question topics.</span>`;
@@ -790,14 +790,14 @@ class AppController {
                         <td class="py-3 px-4 font-semibold text-white">${r.studentName} <span class="block text-xs font-normal text-gray-500">${r.studentId} (${r.gradeLevel})</span></td>
                         <td class="py-3 px-4 text-sm text-gray-300">${r.testTitle}</td>
                         <td class="py-3 px-4 text-xs text-gray-400 font-mono">${r.date}</td>
-                        <td class="py-3 px-4 font-bold ${r.score >= 80 ? 'text-emerald-400' : r.score >= 60 ? 'text-amber-400' : 'text-rose-400'}">${r.score}%</td>
+                        <td class="py-3 px-4 font-bold ${r.score >= 80 ? 'text-emerald-400' : r.score >= 60 ? 'text-amber-400' : 'text-blue-400'}">${r.score}%</td>
                         <td class="py-3 px-4">
                             <span class="px-2.5 py-1 rounded-full text-xs font-mono ${
-                                r.status === 'Pass' ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-500/30' : 'bg-rose-950/60 text-rose-400 border border-rose-500/30'
+                                r.status === 'Pass' ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-500/30' : 'bg-blue-950/60 text-blue-400 border border-blue-500/30'
                             }">${r.status}</span>
                         </td>
                         <td class="py-3 px-4 text-xs text-gray-400">${r.strugglingTopics.join(', ') || 'None'}</td>
-                        <td class="py-3 px-4 text-xs ${r.pronunciationNote.includes('FLAGGED') ? 'text-rose-400 font-bold' : 'text-gray-400'}">${r.pronunciationNote}</td>
+                        <td class="py-3 px-4 text-xs ${r.pronunciationNote.includes('FLAGGED') ? 'text-blue-400 font-bold' : 'text-gray-400'}">${r.pronunciationNote}</td>
                     </tr>
                 `).join('');
             }

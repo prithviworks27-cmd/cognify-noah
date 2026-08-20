@@ -28,19 +28,19 @@
     }
     </script>
 </head>
-<body class="min-h-screen text-gray-100 flex flex-col relative selection:bg-rose-500 selection:text-white bg-[#07080c] overflow-x-hidden">
+<body class="min-h-screen text-gray-100 flex flex-col relative selection:bg-blue-500 selection:text-white bg-[#07080c] overflow-x-hidden">
 
     <!-- Top Navigation Header -->
-    <header class="sticky top-0 z-40 glass-card border-b border-rose-950/60 bg-gray-950/80 backdrop-blur-md">
+    <header class="sticky top-0 z-40 glass-card border-b border-blue-950/60 bg-gray-950/80 backdrop-blur-md">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
             <div class="flex items-center gap-3 cursor-pointer" onclick="app.switchView('landing')">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-red-600 to-rose-500 flex items-center justify-center shadow-lg shadow-red-900/50">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-blue-500 flex items-center justify-center shadow-lg shadow-blue-900/50">
                     <i data-lucide="bot" class="w-6 h-6 text-white"></i>
                 </div>
                 <div>
                     <div class="flex items-center gap-2">
                         <span class="text-xl font-black tracking-wider text-white">COGNIFY</span>
-                        <span class="text-xs px-2 py-0.5 rounded bg-rose-950 text-rose-400 border border-rose-500/30 font-mono font-bold">NOAH AI</span>
+                        <span class="text-xs px-2 py-0.5 rounded bg-blue-950 text-blue-400 border border-blue-500/30 font-mono font-bold">NOAH AI</span>
                     </div>
                     <span class="text-xs text-gray-400 block font-mono">Ultron-Grade Oral Examination System</span>
                 </div>
@@ -52,7 +52,7 @@
                     Home & Showcase
                 </button>
                 <button data-view-target="student-kiosk" class="px-4 py-2 rounded-xl text-sm font-semibold text-gray-300 hover:text-white hover:bg-gray-800/50 transition flex items-center gap-2">
-                    <i data-lucide="graduation-cap" class="w-4 h-4 text-rose-400"></i>
+                    <i data-lucide="graduation-cap" class="w-4 h-4 text-blue-400"></i>
                     <span>Student Portal</span>
                 </button>
                 <button data-view-target="staff-dashboard" class="px-4 py-2 rounded-xl text-sm font-semibold text-gray-300 hover:text-white hover:bg-gray-800/50 transition flex items-center gap-2">
@@ -78,37 +78,25 @@
     <!-- MAIN VIEW CONTAINER -->
     <main class="flex-grow flex flex-col">
 
-        <!-- 1. MINIMAL LANDING PAGE SHOWCASE VIEW WITH LEVITATING ULTRON VIDEO & PARTICLE CORE -->
+        <!-- 1. MINIMAL LANDING PAGE SHOWCASE VIEW WITH PARTICLE CORE -->
         <section id="view-landing" class="view-panel flex-grow relative flex flex-col items-center justify-center min-h-[calc(100vh-5rem)] overflow-hidden py-12">
-            
-            <!-- Levitating Ultron Background Video Layer -->
-            <div class="absolute inset-0 pointer-events-none overflow-hidden z-0">
-                <video id="bgUltronVideo" autoplay muted playsinline class="w-full h-full object-cover opacity-35 filter contrast-125 saturate-150 transition-all duration-700">
-                    <source src="assets/noah_ultron_flight.mp4" type="video/mp4">
-                </video>
-                <!-- Cyber Gradient Overlay -->
-                <div class="absolute inset-0 bg-gradient-to-t from-[#07080c] via-[#07080c]/50 to-[#07080c]/80"></div>
-            </div>
 
             <!-- Central Hero Container -->
             <div id="landingHeroContent" class="relative z-10 max-w-5xl mx-auto px-4 text-center flex flex-col items-center justify-center space-y-6 transition-all duration-700">
                 
                 <!-- System Status Tag -->
-                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-950/70 border border-red-500/50 text-red-400 text-xs font-mono font-bold tracking-widest uppercase animate-pulse">
-                    <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-950/70 border border-blue-500/50 text-blue-400 text-xs font-mono font-bold tracking-widest uppercase animate-pulse">
+                    <span class="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span>
                     <span>NOAH Audio Neural Engine • Active</span>
                 </div>
 
                 <!-- Giant Glowing NOAH Title -->
-                <h1 class="text-6xl sm:text-7xl lg:text-9xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-rose-500 to-cyan-400 text-ultron-glow uppercase">
+                <h1 class="text-6xl sm:text-7xl lg:text-9xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-blue-500 to-cyan-400 text-ultron-glow uppercase">
                     NOAH
                 </h1>
-                <p class="text-xs sm:text-sm font-mono tracking-[0.3em] text-cyan-400 uppercase font-bold">
-                    Ultron-Grade AI Oral Examiner
-                </p>
 
-                <!-- Levitating 3D Swarm Particle Simulation Core -->
-                <div id="ultronCanvasContainer" class="w-full max-w-lg h-80 rounded-3xl overflow-hidden relative my-4 flex items-center justify-center border border-red-500/40 bg-gray-950/40 backdrop-blur-md shadow-2xl shadow-red-950/60 animate-float">
+                <!-- Levitating 3D Swarm Particle Simulation Core (unboxed, interactive) -->
+                <div id="ultronCanvasContainer" class="w-full max-w-2xl h-96 relative my-4 flex items-center justify-center animate-float">
                     <canvas id="ultronCanvas" class="w-full h-full"></canvas>
                 </div>
 
@@ -136,8 +124,8 @@
             <div id="studentDetailStep">
                 <div class="flex flex-wrap items-center justify-between border-b border-gray-800 pb-6 mb-8 gap-4">
                     <div>
-                        <span class="text-xs px-2.5 py-1 rounded bg-rose-950 text-rose-400 border border-rose-500/30 font-mono font-bold" id="displayStudentGrade">Class 5</span>
-                        <h2 class="text-3xl font-extrabold text-white mt-1">Welcome, <span id="displayStudentName" class="text-rose-400">Student</span></h2>
+                        <span class="text-xs px-2.5 py-1 rounded bg-blue-950 text-blue-400 border border-blue-500/30 font-mono font-bold" id="displayStudentGrade">Class 5</span>
+                        <h2 class="text-3xl font-extrabold text-white mt-1">Welcome, <span id="displayStudentName" class="text-blue-400">Student</span></h2>
                         <span class="text-xs text-gray-400 font-mono">Student ID: <span id="displayStudentId">STU-5001</span></span>
                     </div>
 
@@ -149,7 +137,7 @@
                 <!-- Assigned Test Papers List -->
                 <div class="mb-12">
                     <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                        <i data-lucide="book-open" class="w-5 h-5 text-rose-400"></i>
+                        <i data-lucide="book-open" class="w-5 h-5 text-blue-400"></i>
                         <span>Assigned Oral Test Papers</span>
                     </h3>
                     <div id="studentAssignedPapersList" class="grid sm:grid-cols-2 gap-6"></div>
@@ -168,7 +156,7 @@
 
             <!-- Step 4: End-of-Test Result Dashboard -->
             <div id="examResultStep" class="hidden">
-                <div class="glass-card p-8 rounded-3xl border border-red-500/40 max-w-3xl mx-auto">
+                <div class="glass-card p-8 rounded-3xl border border-blue-500/40 max-w-3xl mx-auto">
                     <div class="text-center mb-8 border-b border-gray-800 pb-6">
                         <div class="w-16 h-16 rounded-2xl bg-emerald-950 border border-emerald-500/50 flex items-center justify-center text-emerald-400 mx-auto mb-4">
                             <i data-lucide="award" class="w-8 h-8"></i>
@@ -191,7 +179,7 @@
                             <div class="text-sm font-bold text-white mt-1">
                                 <span class="text-emerald-400" id="resultCorrectCount">0</span> Correct / 
                                 <span class="text-amber-400" id="resultPartialCount">0</span> Partial / 
-                                <span class="text-rose-400" id="resultWrongCount">0</span> Wrong
+                                <span class="text-blue-400" id="resultWrongCount">0</span> Wrong
                             </div>
                         </div>
                     </div>
@@ -248,7 +236,7 @@
                 </div>
                 <div class="glass-card p-6 rounded-2xl border border-gray-800">
                     <span class="text-xs font-mono text-gray-400 block mb-1">Flagged Audio / Needs Review</span>
-                    <span id="kpiFlaggedStudents" class="text-3xl font-black text-rose-400">0</span>
+                    <span id="kpiFlaggedStudents" class="text-3xl font-black text-blue-400">0</span>
                 </div>
                 <div class="glass-card p-6 rounded-2xl border border-gray-800">
                     <span class="text-xs font-mono text-gray-400 block mb-1">Active Test Papers</span>
@@ -257,9 +245,9 @@
             </div>
 
             <!-- PDF & PHOTO TEST PAPER UPLOADER (ADMIN) -->
-            <div class="glass-card p-8 rounded-3xl border border-red-500/40 mb-12 shadow-2xl">
+            <div class="glass-card p-8 rounded-3xl border border-blue-500/40 mb-12 shadow-2xl">
                 <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                    <i data-lucide="file-up" class="w-5 h-5 text-red-400"></i>
+                    <i data-lucide="file-up" class="w-5 h-5 text-blue-400"></i>
                     <span>Upload Test Paper (PDF Document or Image/Photo)</span>
                 </h3>
                 <p class="text-xs text-gray-400 mb-6">
@@ -267,12 +255,12 @@
                 </p>
 
                 <!-- Drag and Drop Area -->
-                <div id="pdfPhotoDropZone" class="border-2 border-dashed border-gray-700 hover:border-red-500/80 rounded-2xl p-10 text-center cursor-pointer transition bg-gray-950/60 group mb-6">
-                    <div class="w-16 h-16 rounded-2xl bg-red-950/80 border border-red-500/40 flex items-center justify-center text-red-400 mx-auto mb-4 group-hover:scale-110 transition">
+                <div id="pdfPhotoDropZone" class="border-2 border-dashed border-gray-700 hover:border-blue-500/80 rounded-2xl p-10 text-center cursor-pointer transition bg-gray-950/60 group mb-6">
+                    <div class="w-16 h-16 rounded-2xl bg-blue-950/80 border border-blue-500/40 flex items-center justify-center text-blue-400 mx-auto mb-4 group-hover:scale-110 transition">
                         <i data-lucide="upload-cloud" class="w-8 h-8"></i>
                     </div>
                     <h4 class="text-base font-bold text-white mb-1">Drag & Drop your PDF or Photo Paper here</h4>
-                    <p class="text-xs text-gray-400 mb-4">Supports <span class="text-red-400 font-mono font-bold">.PDF</span>, <span class="text-red-400 font-mono font-bold">.PNG</span>, <span class="text-red-400 font-mono font-bold">.JPG</span>, <span class="text-red-400 font-mono font-bold">.JPEG</span> files</p>
+                    <p class="text-xs text-gray-400 mb-4">Supports <span class="text-blue-400 font-mono font-bold">.PDF</span>, <span class="text-blue-400 font-mono font-bold">.PNG</span>, <span class="text-blue-400 font-mono font-bold">.JPG</span>, <span class="text-blue-400 font-mono font-bold">.JPEG</span> files</p>
                     <button type="button" class="btn-ultron px-5 py-2.5 rounded-xl font-bold text-xs text-white">
                         Browse File
                     </button>
@@ -356,7 +344,7 @@
         <!-- Top HUD Header -->
         <div class="flex items-center justify-between border-b border-gray-800 pb-4 max-w-5xl mx-auto w-full">
             <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-red-950 border border-red-500/40 flex items-center justify-center text-red-400">
+                <div class="w-8 h-8 rounded-lg bg-blue-950 border border-blue-500/40 flex items-center justify-center text-blue-400">
                     <i data-lucide="bot" class="w-5 h-5"></i>
                 </div>
                 <div>
@@ -367,7 +355,7 @@
 
             <div class="flex items-center gap-4">
                 <div class="w-36 h-2 bg-gray-900 rounded-full overflow-hidden border border-gray-800">
-                    <div id="kioskProgressBar" class="h-full bg-gradient-to-r from-red-500 to-amber-500 w-1/3 transition-all"></div>
+                    <div id="kioskProgressBar" class="h-full bg-gradient-to-r from-blue-500 to-amber-500 w-1/3 transition-all"></div>
                 </div>
                 <button id="exitKioskBtn" class="px-3 py-1.5 rounded-lg bg-gray-900 hover:bg-gray-800 border border-gray-700 text-xs font-mono text-gray-400 hover:text-white">
                     Exit Exam
@@ -378,13 +366,13 @@
         <!-- CENTER HERO: NOAH 3D PARTICLE CORE (DOMINATES TOP/CENTER OF SCREEN) -->
         <div class="my-auto py-6 max-w-4xl mx-auto w-full flex flex-col items-center">
             
-            <div class="w-full max-w-xl h-80 rounded-3xl overflow-hidden relative mb-6 flex items-center justify-center border border-red-500/30 bg-gray-950/80 shadow-2xl shadow-red-950/50" id="fullKioskParticleContainer">
+            <div class="w-full max-w-xl h-80 rounded-3xl overflow-hidden relative mb-6 flex items-center justify-center border border-blue-500/30 bg-gray-950/80 shadow-2xl shadow-blue-950/50" id="fullKioskParticleContainer">
                 <!-- Three.js Canvas (#ultronCanvas) is re-parented here dynamically during exam -->
             </div>
 
             <!-- QUESTION ASKED DIRECTLY BENEATH NOAH -->
-            <div class="w-full max-w-3xl glass-card p-8 rounded-3xl border border-red-500/40 text-center relative shadow-2xl">
-                <span class="text-xs font-mono text-red-400 font-bold uppercase tracking-wider block mb-2">NOAH asks:</span>
+            <div class="w-full max-w-3xl glass-card p-8 rounded-3xl border border-blue-500/40 text-center relative shadow-2xl">
+                <span class="text-xs font-mono text-blue-400 font-bold uppercase tracking-wider block mb-2">NOAH asks:</span>
                 <p id="kioskQuestionText" class="text-2xl font-bold text-white mb-6 leading-relaxed">
                     Loading question...
                 </p>
@@ -408,7 +396,7 @@
                     </button>
 
                     <div class="flex-grow max-w-md flex items-center gap-2">
-                        <input type="text" id="kioskTextInput" placeholder="Or type your answer manually..." class="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 text-sm text-white focus:outline-none focus:border-red-500">
+                        <input type="text" id="kioskTextInput" placeholder="Or type your answer manually..." class="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 text-sm text-white focus:outline-none focus:border-blue-500">
                         <button id="kioskSubmitTextBtn" class="px-5 py-3 rounded-xl bg-gray-800 hover:bg-gray-700 text-white font-semibold text-sm">
                             Submit
                         </button>
@@ -426,7 +414,7 @@
 
     <!-- AUTH / SIGN-IN MODAL -->
     <div id="authModal" class="hidden fixed inset-0 z-50 bg-gray-950/80 backdrop-blur-md flex items-center justify-center p-4">
-        <div class="glass-card p-8 rounded-3xl border border-red-500/40 max-w-md w-full relative shadow-2xl">
+        <div class="glass-card p-8 rounded-3xl border border-blue-500/40 max-w-md w-full relative shadow-2xl">
             <button id="closeAuthModalBtn" class="absolute top-4 right-4 text-gray-400 hover:text-white">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
@@ -434,7 +422,7 @@
             <!-- Student Login Form -->
             <form id="studentLoginForm" class="space-y-4">
                 <div class="text-center mb-6">
-                    <div class="w-12 h-12 rounded-xl bg-rose-950 border border-rose-500/40 flex items-center justify-center text-rose-400 mx-auto mb-2">
+                    <div class="w-12 h-12 rounded-xl bg-blue-950 border border-blue-500/40 flex items-center justify-center text-blue-400 mx-auto mb-2">
                         <i data-lucide="graduation-cap" class="w-6 h-6"></i>
                     </div>
                     <h3 class="text-xl font-bold text-white">Student Sign In</h3>
@@ -498,24 +486,24 @@
     <!-- FLOATING NOAH VOICE CHATBOT WIDGET -->
     <div id="noahWidgetContainer" class="fixed bottom-6 right-6 z-40">
         <!-- Floating Trigger Button -->
-        <button id="widgetToggleBtn" class="w-16 h-16 rounded-full bg-gradient-to-tr from-red-600 via-rose-500 to-amber-500 p-1 shadow-2xl shadow-red-950 hover:scale-105 transition duration-300 relative group">
-            <div class="w-full h-full rounded-full bg-gray-950 flex items-center justify-center text-rose-400 group-hover:text-white transition">
+        <button id="widgetToggleBtn" class="w-16 h-16 rounded-full bg-gradient-to-tr from-blue-600 via-blue-500 to-amber-500 p-1 shadow-2xl shadow-blue-950 hover:scale-105 transition duration-300 relative group">
+            <div class="w-full h-full rounded-full bg-gray-950 flex items-center justify-center text-blue-400 group-hover:text-white transition">
                 <i data-lucide="bot" class="w-8 h-8"></i>
             </div>
-            <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 animate-ping"></span>
-            <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500"></span>
+            <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-blue-500 animate-ping"></span>
+            <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-blue-500"></span>
         </button>
 
         <!-- Expandable Chatbot Window -->
-        <div id="noahWidgetWindow" class="hidden fixed bottom-24 right-6 w-96 max-w-[calc(100vw-3rem)] glass-card rounded-3xl border border-red-500/40 shadow-2xl overflow-hidden transform transition-all duration-300 scale-95 opacity-0">
+        <div id="noahWidgetWindow" class="hidden fixed bottom-24 right-6 w-96 max-w-[calc(100vw-3rem)] glass-card rounded-3xl border border-blue-500/40 shadow-2xl overflow-hidden transform transition-all duration-300 scale-95 opacity-0">
             <div class="bg-gray-950/90 p-4 border-b border-gray-800 flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-lg bg-red-950 border border-red-500/40 flex items-center justify-center text-red-400">
+                    <div class="w-8 h-8 rounded-lg bg-blue-950 border border-blue-500/40 flex items-center justify-center text-blue-400">
                         <i data-lucide="bot" class="w-5 h-5"></i>
                     </div>
                     <div>
                         <h4 class="text-sm font-bold text-white">NOAH AI Widget</h4>
-                        <span class="text-[10px] font-mono text-red-400 block">Ultron Speech Engine</span>
+                        <span class="text-[10px] font-mono text-blue-400 block">Ultron Speech Engine</span>
                     </div>
                 </div>
                 <button id="widgetCloseBtn" class="text-gray-400 hover:text-white p-1">
@@ -524,8 +512,8 @@
             </div>
 
             <div class="p-4 space-y-4 max-h-[380px] overflow-y-auto">
-                <div class="bg-gray-950/80 p-3.5 rounded-2xl border border-red-500/30 text-xs text-gray-300">
-                    <span class="font-mono text-red-400 font-bold block mb-1">NOAH:</span>
+                <div class="bg-gray-950/80 p-3.5 rounded-2xl border border-blue-500/30 text-xs text-gray-300">
+                    <span class="font-mono text-blue-400 font-bold block mb-1">NOAH:</span>
                     Greetings. Select an assigned paper to begin your examination.
                 </div>
 
