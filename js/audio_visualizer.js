@@ -45,6 +45,11 @@ class UltronParticleCore {
         this.bindPointerEvents();
         this.animate();
 
+        // The container is sized by Tailwind's CDN JIT compiler, which can still be
+        // applying styles at construction time — re-measure once layout has settled
+        // so the camera isn't left with a stale aspect ratio from an unstyled div.
+        requestAnimationFrame(() => this.onWindowResize());
+
         window.addEventListener('resize', () => this.onWindowResize());
     }
 
