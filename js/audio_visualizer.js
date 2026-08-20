@@ -35,8 +35,8 @@ class UltronParticleCore {
         this.mouse = new THREE.Vector2(0, 0);
         this.mouseActive = false;
         this.raycaster = new THREE.Raycaster();
-        this.REPEL_RADIUS_3D = 16;
-        this.REPEL_STRENGTH = 22;
+        this.REPEL_RADIUS_3D = 9;
+        this.REPEL_STRENGTH = 11;
         this._closestPoint = new THREE.Vector3();
         this._pushVec = new THREE.Vector3();
 
