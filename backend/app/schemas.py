@@ -46,6 +46,21 @@ class QuestionIn(BaseModel):
     topicTag: str = "General Knowledge"
 
 
+class GradeRequest(BaseModel):
+    transcript: str
+
+
+class GradeResult(BaseModel):
+    status: str
+    score: int
+    maxScore: int
+    confidence: float
+    feedback: str
+    matchedKeywords: list[str]
+    missingKeywords: list[str]
+    topicTag: str
+
+
 class PaperCreate(BaseModel):
     id: str | None = None
     subjectId: str | None = None

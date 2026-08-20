@@ -622,8 +622,19 @@ class AppController {
             window.audioVisualizer.setMode('listening');
         }
 
-        setTimeout(() => {
-            const gradeResult = window.gradingEngine.evaluateAnswer(question, transcript);
+        setTimeout(async () => {
+            let gradeResult;
+            try {
+                gradeResult = await window.dataStore.gradeAnswer(paper.id, qIndex, transcript);
+            } catch (err) {
+                gradeResult = {
+                    status: 'incorrect',
+                    score: 0,
+                    maxScore: question.points || 10,
+                    feedback: 'NOAH could not reach the grading service. This answer was marked incorrect — please continue.',
+                    topicTag: question.topicTag || 'General Knowledge'
+                };
+            }
 
             this.examSession.answers.push({
                 questionId: question.id,

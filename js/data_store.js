@@ -73,6 +73,14 @@ class DataStore {
         return this._fetch(`/papers/${id}`, { method: 'DELETE' });
     }
 
+    // Grading happens server-side — the rubric never has to reach the browser.
+    gradeAnswer(paperId, questionIndex, transcript) {
+        return this._fetch(`/papers/${paperId}/questions/${questionIndex}/grade`, {
+            method: 'POST',
+            body: JSON.stringify({ transcript })
+        });
+    }
+
     // --- Student Test Results ---
     getResults() {
         return this._fetch('/results');

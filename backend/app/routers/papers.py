@@ -2,14 +2,25 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.deps import get_current_principal, require_admin, Principal
-from app.models import TestPaper
-from app.schemas import PaperCreate, PaperOut
+from app.deps import get_current_principal, require_admin, require_student, Principal
+from app.grading import evaluate_answer
+from app.models import TestPaper, User
+from app.schemas import GradeRequest, GradeResult, PaperCreate, PaperOut
 
 router = APIRouter(prefix="/api/papers", tags=["papers"])
 
+# Fields a student's own browser is allowed to see. acceptedAnswers/keywords
+# are the answer key — grading happens server-side precisely so those never
+# have to be sent to the student taking the test.
+STUDENT_SAFE_QUESTION_FIELDS = ("text", "points", "topicTag")
 
-def _to_out(p: TestPaper) -> PaperOut:
+
+def _to_out(p: TestPaper, *, include_rubric: bool) -> PaperOut:
+    if include_rubric:
+        questions = p.questions
+    else:
+        questions = [{k: q.get(k) for k in STUDENT_SAFE_QUESTION_FIELDS} for q in p.questions]
+
     return PaperOut(
         id=p.id,
         subjectId=p.subject_id,
@@ -17,7 +28,7 @@ def _to_out(p: TestPaper) -> PaperOut:
         gradeLevel=p.grade_level,
         active=p.active,
         durationMinutes=p.duration_minutes,
-        questions=p.questions,
+        questions=questions,
     )
 
 
@@ -27,8 +38,9 @@ def list_papers(
     db: Session = Depends(get_db),
     principal: Principal = Depends(get_current_principal),
 ):
+    is_admin = principal.role == "admin"
     query = db.query(TestPaper)
-    if principal.role == "admin":
+    if is_admin:
         papers = query.order_by(TestPaper.created_at.desc()).all()
     else:
         query = query.filter(TestPaper.active.is_(True))
@@ -39,15 +51,15 @@ def list_papers(
             ]
         else:
             papers = query.all()
-    return [_to_out(p) for p in papers]
+    return [_to_out(p, include_rubric=is_admin) for p in papers]
 
 
 @router.get("/{paper_id}", response_model=PaperOut)
-def get_paper(paper_id: str, db: Session = Depends(get_db), _: Principal = Depends(get_current_principal)):
+def get_paper(paper_id: str, db: Session = Depends(get_db), principal: Principal = Depends(get_current_principal)):
     paper = db.get(TestPaper, paper_id)
     if not paper:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Paper not found")
-    return _to_out(paper)
+    return _to_out(paper, include_rubric=principal.role == "admin")
 
 
 @router.post("", response_model=PaperOut)
@@ -64,7 +76,7 @@ def create_paper(payload: PaperCreate, db: Session = Depends(get_db), _: Princip
     db.add(paper)
     db.commit()
     db.refresh(paper)
-    return _to_out(paper)
+    return _to_out(paper, include_rubric=True)
 
 
 @router.delete("/{paper_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -74,3 +86,23 @@ def delete_paper(paper_id: str, db: Session = Depends(get_db), _: Principal = De
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Paper not found")
     db.delete(paper)
     db.commit()
+
+
+@router.post("/{paper_id}/questions/{question_index}/grade", response_model=GradeResult)
+def grade_question(
+    paper_id: str,
+    question_index: int,
+    payload: GradeRequest,
+    db: Session = Depends(get_db),
+    _student: User = Depends(require_student),
+):
+    paper = db.get(TestPaper, paper_id)
+    if not paper:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Paper not found")
+    if question_index < 0 or question_index >= len(paper.questions):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Question index out of range")
+
+    # The rubric is read server-side from the DB — never trust a client-supplied one.
+    question = paper.questions[question_index]
+    result = evaluate_answer(question, payload.transcript)
+    return GradeResult(**result)
