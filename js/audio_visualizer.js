@@ -28,11 +28,17 @@ class UltronParticleCore {
             targetRotation: 0.8
         };
 
-        // Cursor repulsion state — mouse tracked in normalized device coords (-1..1),
-        // starts off-screen so nothing reacts until the user actually hovers.
-        this.mouse = new THREE.Vector2(-9999, -9999);
-        this.REPEL_RADIUS = 0.22;
-        this._projected = new THREE.Vector3();
+        // Cursor repulsion state — a 3D ray is cast from the camera through the
+        // pointer each frame, and particles near that ray are physically pushed
+        // away in 3D space (not just hidden), so the swarm visibly parts around
+        // the cursor with real depth.
+        this.mouse = new THREE.Vector2(0, 0);
+        this.mouseActive = false;
+        this.raycaster = new THREE.Raycaster();
+        this.REPEL_RADIUS_3D = 16;
+        this.REPEL_STRENGTH = 22;
+        this._closestPoint = new THREE.Vector3();
+        this._pushVec = new THREE.Vector3();
 
         this.initThree();
         this.initSwarm();
@@ -47,8 +53,9 @@ class UltronParticleCore {
             const rect = this.canvas.getBoundingClientRect();
             this.mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
             this.mouse.y = -(((clientY - rect.top) / rect.height) * 2 - 1);
+            this.mouseActive = true;
         };
-        const reset = () => this.mouse.set(-9999, -9999);
+        const reset = () => { this.mouseActive = false; };
 
         this.canvas.addEventListener('mousemove', (e) => updateFromClient(e.clientX, e.clientY));
         this.canvas.addEventListener('mouseleave', reset);
@@ -193,6 +200,11 @@ class UltronParticleCore {
 
         this.controls.update();
 
+        // Cast the cursor ray once per frame (not per particle) using the latest camera.
+        if (this.mouseActive) {
+            this.raycaster.setFromCamera(this.mouse, this.camera);
+        }
+
         // 3D Particle Swarm Mathematics
         const count = this.COUNT;
         const golden = 2.3999632297;
@@ -244,17 +256,28 @@ class UltronParticleCore {
             }
 
             this.positions[i].lerp(this.target, 0.1);
-            this.dummy.position.copy(this.positions[i]);
 
-            // Cursor repulsion: particles projected near the pointer shrink away to
-            // nothing, opening a hole in the swarm that follows the cursor.
-            this._projected.copy(this.positions[i]).project(this.camera);
-            const dx = this._projected.x - this.mouse.x;
-            const dy = this._projected.y - this.mouse.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            const particleScale = dist < this.REPEL_RADIUS ? this._smoothstep(0, this.REPEL_RADIUS, dist) : 1;
-            this.dummy.scale.setScalar(particleScale);
+            // Cursor repulsion: particles near the 3D ray cast through the pointer
+            // are physically displaced away from it, so the swarm parts around the
+            // cursor with real depth instead of just fading out.
+            let px2 = this.positions[i].x;
+            let py2 = this.positions[i].y;
+            let pz2 = this.positions[i].z;
 
+            if (this.mouseActive) {
+                this.raycaster.ray.closestPointToPoint(this.positions[i], this._closestPoint);
+                this._pushVec.subVectors(this.positions[i], this._closestPoint);
+                const dist = this._pushVec.length();
+                if (dist > 0.0001 && dist < this.REPEL_RADIUS_3D) {
+                    const force = this._smoothstep(this.REPEL_RADIUS_3D, 0, dist) * this.REPEL_STRENGTH;
+                    this._pushVec.normalize().multiplyScalar(force);
+                    px2 += this._pushVec.x;
+                    py2 += this._pushVec.y;
+                    pz2 += this._pushVec.z;
+                }
+            }
+
+            this.dummy.position.set(px2, py2, pz2);
             this.dummy.updateMatrix();
 
             this.instancedMesh.setMatrixAt(i, this.dummy.matrix);
