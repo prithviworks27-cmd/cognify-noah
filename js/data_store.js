@@ -1,6 +1,7 @@
 /**
  * Cognify - NOAH Data Store
- * Clean data store with localStorage management for subjects, test papers, student results, and user authentication sessions.
+ * Talks to the real backend API for accounts, test papers, and student results.
+ * Subjects stay a static local reference list (not user data).
  */
 
 const INITIAL_SUBJECTS = [
@@ -10,103 +11,79 @@ const INITIAL_SUBJECTS = [
     { id: 'sst-05', name: 'Social Studies', code: 'SST05', icon: 'globe' }
 ];
 
+const TOKEN_KEY = 'cognify_token';
+
 class DataStore {
-    constructor() {
-        this.init();
+    getToken() {
+        return localStorage.getItem(TOKEN_KEY);
     }
 
-    init() {
-        if (!localStorage.getItem('cognify_subjects')) {
-            localStorage.setItem('cognify_subjects', JSON.stringify(INITIAL_SUBJECTS));
+    setToken(token) {
+        localStorage.setItem(TOKEN_KEY, token);
+    }
+
+    clearToken() {
+        localStorage.removeItem(TOKEN_KEY);
+    }
+
+    async _fetch(path, options = {}) {
+        const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+        const token = this.getToken();
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const res = await fetch(`/api${path}`, { ...options, headers });
+        if (!res.ok) {
+            let message = res.statusText;
+            try {
+                const data = await res.json();
+                message = data.detail || message;
+            } catch (e) {
+                // response wasn't JSON — keep the status text
+            }
+            throw new Error(message);
         }
-        if (!localStorage.getItem('cognify_test_papers')) {
-            localStorage.setItem('cognify_test_papers', JSON.stringify([]));
-        }
-        if (!localStorage.getItem('cognify_results')) {
-            localStorage.setItem('cognify_results', JSON.stringify([]));
-        }
-        if (!localStorage.getItem('cognify_auth_session')) {
-            // Default demo student session for Class 5
-            const defaultSession = {
-                role: 'student',
-                studentName: 'Alex Mercer',
-                studentId: 'STU-5001',
-                gradeLevel: 'Class 5'
-            };
-            localStorage.setItem('cognify_auth_session', JSON.stringify(defaultSession));
-        }
+        if (res.status === 204) return null;
+        return res.json();
     }
 
     // --- Subjects ---
     getSubjects() {
-        return JSON.parse(localStorage.getItem('cognify_subjects')) || INITIAL_SUBJECTS;
+        return INITIAL_SUBJECTS;
     }
 
     // --- Test Papers ---
     getTestPapers() {
-        return JSON.parse(localStorage.getItem('cognify_test_papers')) || [];
+        return this._fetch('/papers');
     }
 
     getPapersForGrade(gradeLevel) {
-        const papers = this.getTestPapers();
-        if (!gradeLevel) return papers.filter(p => p.active);
-        return papers.filter(p => p.active && (p.gradeLevel.toLowerCase() === gradeLevel.toLowerCase() || p.gradeLevel === 'All Grades'));
+        const qs = gradeLevel ? `?grade_level=${encodeURIComponent(gradeLevel)}` : '';
+        return this._fetch(`/papers${qs}`);
     }
 
     getTestPaperById(id) {
-        const papers = this.getTestPapers();
-        return papers.find(p => p.id === id);
+        return this._fetch(`/papers/${id}`);
     }
 
     saveTestPaper(paper) {
-        const papers = this.getTestPapers();
-        const existingIndex = papers.findIndex(p => p.id === paper.id);
-        if (existingIndex >= 0) {
-            papers[existingIndex] = paper;
-        } else {
-            papers.unshift(paper);
-        }
-        localStorage.setItem('cognify_test_papers', JSON.stringify(papers));
+        return this._fetch('/papers', { method: 'POST', body: JSON.stringify(paper) });
     }
 
     deleteTestPaper(id) {
-        let papers = this.getTestPapers();
-        papers = papers.filter(p => p.id !== id);
-        localStorage.setItem('cognify_test_papers', JSON.stringify(papers));
+        return this._fetch(`/papers/${id}`, { method: 'DELETE' });
     }
 
     // --- Student Test Results ---
     getResults() {
-        return JSON.parse(localStorage.getItem('cognify_results')) || [];
+        return this._fetch('/results');
     }
 
-    getResultsForStudent(studentId) {
-        const results = this.getResults();
-        return results.filter(r => r.studentId === studentId);
+    getResultsForStudent() {
+        return this._fetch('/results/mine');
     }
 
     saveResult(result) {
-        const results = this.getResults();
-        results.unshift(result);
-        localStorage.setItem('cognify_results', JSON.stringify(results));
-    }
-
-    clearAllResults() {
-        localStorage.setItem('cognify_results', JSON.stringify([]));
-    }
-
-    // --- Auth Session ---
-    getAuthSession() {
-        return JSON.parse(localStorage.getItem('cognify_auth_session')) || {
-            role: 'student',
-            studentName: 'Student',
-            studentId: 'STU-5001',
-            gradeLevel: 'Class 5'
-        };
-    }
-
-    setAuthSession(sessionData) {
-        localStorage.setItem('cognify_auth_session', JSON.stringify(sessionData));
+        return this._fetch('/results', { method: 'POST', body: JSON.stringify(result) });
     }
 }
 

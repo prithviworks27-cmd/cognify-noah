@@ -124,9 +124,14 @@
                         <span class="text-xs text-gray-400 font-mono">Student ID: <span id="displayStudentId">STU-5001</span></span>
                     </div>
 
-                    <button onclick="app.openAuthModal('student')" class="px-4 py-2 rounded-xl bg-gray-900 hover:bg-gray-800 border border-gray-700 text-xs font-semibold text-gray-300">
-                        Switch Student Profile
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button onclick="app.openAuthModal('student')" class="px-4 py-2 rounded-xl bg-gray-900 hover:bg-gray-800 border border-gray-700 text-xs font-semibold text-gray-300">
+                            Switch Student Profile
+                        </button>
+                        <button onclick="app.handleLogout()" class="px-4 py-2 rounded-xl bg-gray-900 hover:bg-gray-800 border border-gray-700 text-xs font-semibold text-gray-300">
+                            Log Out
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Assigned Test Papers List -->
@@ -213,10 +218,15 @@
                     <h2 class="text-3xl font-extrabold text-white">Admin Management & Analytics</h2>
                     <p class="text-gray-400 text-sm">Upload PDF or Photo test papers for NOAH to ask students one by one.</p>
                 </div>
-                <button id="exportCsvBtn" class="px-4 py-2.5 rounded-xl glass-card-cyan hover:bg-cyan-950/40 text-cyan-300 font-semibold text-sm flex items-center gap-2 transition">
-                    <i data-lucide="download" class="w-4 h-4"></i>
-                    <span>Export Results (CSV)</span>
-                </button>
+                <div class="flex items-center gap-2">
+                    <button id="exportCsvBtn" class="px-4 py-2.5 rounded-xl glass-card-cyan hover:bg-cyan-950/40 text-cyan-300 font-semibold text-sm flex items-center gap-2 transition">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        <span>Export Results (CSV)</span>
+                    </button>
+                    <button onclick="app.handleLogout()" class="px-4 py-2.5 rounded-xl bg-gray-900 hover:bg-gray-800 border border-gray-700 text-gray-300 font-semibold text-sm transition">
+                        Log Out
+                    </button>
+                </div>
             </div>
 
             <!-- KPI Cards -->
@@ -414,54 +424,89 @@
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
 
-            <!-- Student Login Form -->
+            <!-- Student Log In Form -->
             <form id="studentLoginForm" class="space-y-4">
                 <div class="text-center mb-6">
                     <div class="w-12 h-12 rounded-xl bg-blue-950 border border-blue-500/40 flex items-center justify-center text-blue-400 mx-auto mb-2">
                         <i data-lucide="graduation-cap" class="w-6 h-6"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-white">Student Sign In</h3>
-                    <p class="text-xs text-gray-400">Enter your student information to access Class 5 test papers.</p>
+                    <h3 class="text-xl font-bold text-white">Student Log In</h3>
+                    <p class="text-xs text-gray-400">Log in with your email to access your assigned test papers.</p>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-mono text-gray-400 mb-1">Student Full Name</label>
-                    <input type="text" id="authStudentName" required placeholder="e.g. Alex Mercer" value="Alex Mercer" class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm">
+                    <label class="block text-xs font-mono text-gray-400 mb-1">Email</label>
+                    <input type="email" id="loginStudentEmail" required placeholder="you@gmail.com" class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-mono text-gray-400 mb-1">Password</label>
+                    <input type="password" id="loginStudentPassword" required placeholder="Your password" class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm">
                 </div>
 
+                <button type="submit" class="btn-ultron w-full py-3 rounded-xl font-bold text-white text-sm mt-2">
+                    Log In
+                </button>
+                <button type="button" id="showStudentSignupBtn" class="w-full text-center text-xs font-mono text-blue-400 hover:underline pt-1">
+                    New here? Create a student account
+                </button>
+            </form>
+
+            <!-- Student Sign Up Form -->
+            <form id="studentSignupForm" class="hidden space-y-4">
+                <div class="text-center mb-6">
+                    <div class="w-12 h-12 rounded-xl bg-blue-950 border border-blue-500/40 flex items-center justify-center text-blue-400 mx-auto mb-2">
+                        <i data-lucide="graduation-cap" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white">Create Student Account</h3>
+                    <p class="text-xs text-gray-400">Sign up with your email to start taking oral tests.</p>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-mono text-gray-400 mb-1">Full Name</label>
+                    <input type="text" id="signupStudentName" required placeholder="e.g. Alex Mercer" class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-mono text-gray-400 mb-1">Email</label>
+                    <input type="email" id="signupStudentEmail" required placeholder="you@gmail.com" class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-mono text-gray-400 mb-1">Password</label>
+                    <input type="password" id="signupStudentPassword" required minlength="6" placeholder="At least 6 characters" class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm">
+                </div>
                 <div>
                     <label class="block text-xs font-mono text-gray-400 mb-1">Student ID / Roll Number</label>
-                    <input type="text" id="authStudentId" required placeholder="e.g. STU-5001" value="STU-5001" class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm font-mono">
+                    <input type="text" id="signupStudentId" required placeholder="e.g. STU-5001" class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm font-mono">
                 </div>
-
                 <div>
                     <label class="block text-xs font-mono text-gray-400 mb-1">Class / Grade</label>
-                    <select id="authStudentGrade" class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm">
-                        <option value="Class 5" selected>Class 5</option>
+                    <select id="signupStudentGrade" class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm">
                         <option value="Class 4">Class 4</option>
+                        <option value="Class 5" selected>Class 5</option>
                         <option value="Class 6">Class 6</option>
                     </select>
                 </div>
 
                 <button type="submit" class="btn-ultron w-full py-3 rounded-xl font-bold text-white text-sm mt-2">
-                    Enter Student Portal
+                    Create Account & Enter Portal
+                </button>
+                <button type="button" id="showStudentLoginBtn" class="w-full text-center text-xs font-mono text-blue-400 hover:underline pt-1">
+                    Already have an account? Log in
                 </button>
             </form>
 
-            <!-- Admin Password Login Form -->
+            <!-- Admin Passkey Login Form -->
             <form id="adminLoginForm" class="hidden space-y-4">
                 <div class="text-center mb-6">
                     <div class="w-12 h-12 rounded-xl bg-cyan-950 border border-cyan-500/40 flex items-center justify-center text-cyan-400 mx-auto mb-2">
                         <i data-lucide="shield-check" class="w-6 h-6"></i>
                     </div>
                     <h3 class="text-xl font-bold text-white">Institute Admin Access</h3>
-                    <p class="text-xs text-gray-400">Enter Admin Passkey to upload PDF/Photo test papers and review student results.</p>
+                    <p class="text-xs text-gray-400">Enter the Admin Passkey to upload test papers and review student results.</p>
                 </div>
 
                 <div>
                     <label class="block text-xs font-mono text-gray-400 mb-1">Admin Passkey</label>
-                    <input type="password" id="authAdminPasskey" required placeholder="Enter passkey (e.g. admin)" class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm font-mono">
-                    <span class="text-[10px] text-gray-500 block mt-1">Passkey hint: admin or admin123</span>
+                    <input type="password" id="authAdminPasskey" required placeholder="Enter passkey" class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm font-mono">
                 </div>
 
                 <button type="submit" class="w-full py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-bold text-white text-sm shadow-lg shadow-cyan-950/50 mt-2">

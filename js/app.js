@@ -28,7 +28,11 @@ class AppController {
         document.addEventListener('DOMContentLoaded', () => this.init());
     }
 
-    init() {
+    async init() {
+        // Wait for any stored login token to be validated against the backend
+        // before binding events or rendering anything auth-dependent.
+        await window.authManager.ready;
+
         this.bindNavigationEvents();
         this.bindAuthEvents();
         this.bindWidgetEvents();
@@ -38,8 +42,8 @@ class AppController {
         this.bindBackgroundVideoLoop();
 
         this.updateUserAuthHeaderUI();
-        this.renderSubjectAndPapers();
-        this.renderStaffDashboard();
+        await this.renderSubjectAndPapers();
+        await this.renderStaffDashboard();
 
         if (window.lucide) window.lucide.createIcons();
     }
@@ -99,9 +103,13 @@ class AppController {
     }
 
     // --- Navigation & View Switching ---
-    switchView(viewName) {
+    async switchView(viewName) {
         if (viewName === 'staff-dashboard' && !window.authManager.isAdmin()) {
             this.openAuthModal('admin');
+            return;
+        }
+        if (viewName === 'student-kiosk' && !window.authManager.isStudent()) {
+            this.openAuthModal('student');
             return;
         }
 
@@ -120,9 +128,9 @@ class AppController {
         }
 
         if (viewName === 'student-kiosk') {
-            this.renderSubjectAndPapers();
+            await this.renderSubjectAndPapers();
         } else if (viewName === 'staff-dashboard') {
-            this.renderStaffDashboard();
+            await this.renderStaffDashboard();
         }
 
         if (window.lucide) window.lucide.createIcons();
@@ -132,6 +140,14 @@ class AppController {
         document.querySelectorAll('[data-view-target]').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const target = e.currentTarget.getAttribute('data-view-target');
+
+                const needsStudentAuth = target === 'student-kiosk' && !window.authManager.isStudent();
+                const needsAdminAuth = target === 'staff-dashboard' && !window.authManager.isAdmin();
+                if (needsStudentAuth || needsAdminAuth) {
+                    this.openAuthModal(needsAdminAuth ? 'admin' : 'student');
+                    return;
+                }
+
                 if (this.currentView === 'landing' && (target === 'student-kiosk' || target === 'staff-dashboard')) {
                     this.playCinematicLoginTransition(target);
                 } else {
@@ -169,25 +185,14 @@ class AppController {
     }
 
     bindAuthEvents() {
-        const switchRoleBtn = document.getElementById('switchRoleBtn');
         const authModal = document.getElementById('authModal');
         const closeAuthModal = document.getElementById('closeAuthModalBtn');
         const studentLoginForm = document.getElementById('studentLoginForm');
+        const studentSignupForm = document.getElementById('studentSignupForm');
         const adminLoginForm = document.getElementById('adminLoginForm');
         const toggleAuthModeBtn = document.getElementById('toggleAuthModeBtn');
-
-        if (switchRoleBtn) {
-            switchRoleBtn.addEventListener('click', () => {
-                if (window.authManager.isAdmin()) {
-                    window.authManager.logout();
-                    this.updateUserAuthHeaderUI();
-                    this.switchView('landing');
-                    alert('Switched to Student Mode.');
-                } else {
-                    this.openAuthModal('admin');
-                }
-            });
-        }
+        const showStudentSignupBtn = document.getElementById('showStudentSignupBtn');
+        const showStudentLoginBtn = document.getElementById('showStudentLoginBtn');
 
         if (closeAuthModal) {
             closeAuthModal.addEventListener('click', () => {
@@ -195,45 +200,67 @@ class AppController {
             });
         }
 
+        if (showStudentSignupBtn) {
+            showStudentSignupBtn.addEventListener('click', () => this.showAuthForm('student-signup'));
+        }
+
+        if (showStudentLoginBtn) {
+            showStudentLoginBtn.addEventListener('click', () => this.showAuthForm('student-login'));
+        }
+
         if (toggleAuthModeBtn) {
             toggleAuthModeBtn.addEventListener('click', () => {
                 const isAdminFormVisible = !adminLoginForm.classList.contains('hidden');
                 if (isAdminFormVisible) {
-                    adminLoginForm.classList.add('hidden');
-                    studentLoginForm.classList.remove('hidden');
+                    this.showAuthForm('student-login');
                     toggleAuthModeBtn.innerText = "Need Admin Access? Sign in as Admin";
                 } else {
-                    studentLoginForm.classList.add('hidden');
-                    adminLoginForm.classList.remove('hidden');
+                    this.showAuthForm('admin');
                     toggleAuthModeBtn.innerText = "Sign in as Student instead";
                 }
             });
         }
 
         if (studentLoginForm) {
-            studentLoginForm.addEventListener('submit', (e) => {
+            studentLoginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const name = document.getElementById('authStudentName').value.trim();
-                const id = document.getElementById('authStudentId').value.trim();
-                const grade = document.getElementById('authStudentGrade').value;
+                const email = document.getElementById('loginStudentEmail').value.trim();
+                const password = document.getElementById('loginStudentPassword').value;
+                try {
+                    await window.authManager.loginStudent(email, password);
+                    this.updateUserAuthHeaderUI();
+                    this.playCinematicLoginTransition('student-kiosk');
+                } catch (err) {
+                    alert(err.message || 'Login failed. Please check your email and password.');
+                }
+            });
+        }
 
-                window.authManager.loginAsStudent(name, id, grade);
-                this.updateUserAuthHeaderUI();
-                
-                // Trigger Cinematic Ultron Rush Video + Particle Warp Transition!
-                this.playCinematicLoginTransition('student-kiosk');
+        if (studentSignupForm) {
+            studentSignupForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = document.getElementById('signupStudentName').value.trim();
+                const email = document.getElementById('signupStudentEmail').value.trim();
+                const password = document.getElementById('signupStudentPassword').value;
+                const id = document.getElementById('signupStudentId').value.trim();
+                const grade = document.getElementById('signupStudentGrade').value;
+                try {
+                    await window.authManager.signupStudent(email, password, name, id, grade);
+                    this.updateUserAuthHeaderUI();
+                    this.playCinematicLoginTransition('student-kiosk');
+                } catch (err) {
+                    alert(err.message || 'Could not create your account. Please try again.');
+                }
             });
         }
 
         if (adminLoginForm) {
-            adminLoginForm.addEventListener('submit', (e) => {
+            adminLoginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const passkey = document.getElementById('authAdminPasskey').value.trim();
-                const res = window.authManager.loginAsAdmin(passkey);
+                const res = await window.authManager.loginAsAdmin(passkey);
                 if (res.success) {
                     this.updateUserAuthHeaderUI();
-                    
-                    // Trigger Cinematic Ultron Rush Video + Particle Warp Transition!
                     this.playCinematicLoginTransition('staff-dashboard');
                 } else {
                     alert(res.message);
@@ -242,20 +269,29 @@ class AppController {
         }
     }
 
+    handleLogout() {
+        window.authManager.logout();
+        this.updateUserAuthHeaderUI();
+        this.switchView('landing');
+    }
+
+    // Shows exactly one of the three auth forms, hiding the other two.
+    showAuthForm(mode) {
+        document.getElementById('studentLoginForm').classList.toggle('hidden', mode !== 'student-login');
+        document.getElementById('studentSignupForm').classList.toggle('hidden', mode !== 'student-signup');
+        document.getElementById('adminLoginForm').classList.toggle('hidden', mode !== 'admin');
+    }
+
     openAuthModal(defaultMode = 'student') {
         const authModal = document.getElementById('authModal');
-        const studentLoginForm = document.getElementById('studentLoginForm');
-        const adminLoginForm = document.getElementById('adminLoginForm');
         const toggleAuthModeBtn = document.getElementById('toggleAuthModeBtn');
 
         authModal.classList.remove('hidden');
         if (defaultMode === 'admin') {
-            studentLoginForm.classList.add('hidden');
-            adminLoginForm.classList.remove('hidden');
+            this.showAuthForm('admin');
             toggleAuthModeBtn.innerText = "Sign in as Student instead";
         } else {
-            adminLoginForm.classList.add('hidden');
-            studentLoginForm.classList.remove('hidden');
+            this.showAuthForm('student-login');
             toggleAuthModeBtn.innerText = "Need Admin Access? Sign in as Admin";
         }
     }
@@ -294,15 +330,14 @@ class AppController {
         });
 
         if (publishParsedPaperBtn) {
-            publishParsedPaperBtn.addEventListener('click', () => {
+            publishParsedPaperBtn.addEventListener('click', async () => {
                 if (!this.pendingParsedPaper) return;
-                
+
                 const customTitle = document.getElementById('parsedPaperTitleInput').value.trim();
                 const customGrade = document.getElementById('parsedPaperGradeSelect').value;
                 const customSubject = document.getElementById('parsedPaperSubjectSelect').value;
 
                 const finalPaper = {
-                    id: 'paper-' + Date.now(),
                     subjectId: customSubject,
                     title: customTitle || this.pendingParsedPaper.title,
                     gradeLevel: customGrade,
@@ -311,15 +346,19 @@ class AppController {
                     questions: this.pendingParsedPaper.questions
                 };
 
-                window.dataStore.saveTestPaper(finalPaper);
-                alert(`Paper "${finalPaper.title}" (${finalPaper.questions.length} questions) published to ${customGrade} students successfully!`);
+                try {
+                    await window.dataStore.saveTestPaper(finalPaper);
+                    alert(`Paper "${finalPaper.title}" (${finalPaper.questions.length} questions) published to ${customGrade} students successfully!`);
 
-                document.getElementById('extractedQuestionsPreviewContainer').classList.add('hidden');
-                this.pendingParsedPaper = null;
-                fileInput.value = '';
+                    document.getElementById('extractedQuestionsPreviewContainer').classList.add('hidden');
+                    this.pendingParsedPaper = null;
+                    fileInput.value = '';
 
-                this.renderSubjectAndPapers();
-                this.renderStaffDashboard();
+                    await this.renderSubjectAndPapers();
+                    await this.renderStaffDashboard();
+                } catch (err) {
+                    alert(err.message || 'Could not publish this paper.');
+                }
             });
         }
     }
@@ -395,11 +434,12 @@ class AppController {
     }
 
     // --- Subject & Paper Rendering for Logged-In Student ---
-    renderSubjectAndPapers() {
+    async renderSubjectAndPapers() {
         const currentUser = window.authManager.getCurrentUser();
+        if (!currentUser || currentUser.role !== 'student') return;
         const userGrade = currentUser.gradeLevel || 'Class 5';
 
-        const gradePapers = window.dataStore.getPapersForGrade(userGrade);
+        const gradePapers = await window.dataStore.getPapersForGrade(userGrade);
         const widgetSelect = document.getElementById('widgetPaperSelect');
         const studentPapersList = document.getElementById('studentAssignedPapersList');
 
@@ -441,14 +481,13 @@ class AppController {
             `).join('');
         }
 
-        this.renderStudentHistory();
+        await this.renderStudentHistory();
 
         if (window.lucide) window.lucide.createIcons();
     }
 
-    renderStudentHistory() {
-        const currentUser = window.authManager.getCurrentUser();
-        const results = window.dataStore.getResultsForStudent(currentUser.studentId);
+    async renderStudentHistory() {
+        const results = await window.dataStore.getResultsForStudent();
         const container = document.getElementById('studentPastResultsList');
 
         if (container) {
@@ -472,9 +511,11 @@ class AppController {
     }
 
     // --- FULL-SCREEN NOAH PARTICLE KIOSK ENGINE ---
-    launchFullKioskExam(paperId) {
-        const paper = window.dataStore.getTestPaperById(paperId);
-        if (!paper) {
+    async launchFullKioskExam(paperId) {
+        let paper;
+        try {
+            paper = await window.dataStore.getTestPaperById(paperId);
+        } catch (err) {
             alert('Paper not found.');
             return;
         }
@@ -632,7 +673,7 @@ class AppController {
         }
     }
 
-    finishKioskExamSession() {
+    async finishKioskExamSession() {
         this.examSession.active = false;
 
         let totalScore = 0;
@@ -685,14 +726,14 @@ class AppController {
             status: finalScorePct >= 60 ? 'Pass' : 'Needs Review'
         };
 
-        window.dataStore.saveResult(resultRecord);
+        await window.dataStore.saveResult(resultRecord);
 
         document.getElementById('noahFullScreenKiosk').classList.add('hidden');
         if (window.audioVisualizer) {
             window.audioVisualizer.moveToContainer('ultronCanvasContainer');
         }
 
-        this.switchView('student-kiosk');
+        await this.switchView('student-kiosk');
         document.getElementById('studentDetailStep').classList.add('hidden');
         document.getElementById('examResultStep').classList.remove('hidden');
 
@@ -723,8 +764,8 @@ class AppController {
             window.voiceEngine.speak(`Examination complete, ${resultRecord.studentName}. Your result has been uploaded to the institute dashboard.`);
         }
 
-        this.renderSubjectAndPapers();
-        this.renderStaffDashboard();
+        await this.renderSubjectAndPapers();
+        await this.renderStaffDashboard();
     }
 
     bindExamEvents() {
@@ -761,9 +802,12 @@ class AppController {
     }
 
     // --- Staff Admin Dashboard Rendering ---
-    renderStaffDashboard() {
-        const results = window.dataStore.getResults();
-        const papers = window.dataStore.getTestPapers();
+    async renderStaffDashboard() {
+        if (!window.authManager.isAdmin()) return;
+        const [results, papers] = await Promise.all([
+            window.dataStore.getResults(),
+            window.dataStore.getTestPapers()
+        ]);
 
         const totalTests = results.length;
         const avgScore = totalTests > 0 ? Math.round(results.reduce((acc, r) => acc + r.score, 0) / totalTests) : 0;
@@ -808,8 +852,8 @@ class AppController {
         const exportCsvBtn = document.getElementById('exportCsvBtn');
 
         if (exportCsvBtn) {
-            exportCsvBtn.addEventListener('click', () => {
-                const results = window.dataStore.getResults();
+            exportCsvBtn.addEventListener('click', async () => {
+                const results = await window.dataStore.getResults();
                 if (results.length === 0) {
                     alert('No student results available to export.');
                     return;

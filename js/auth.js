@@ -1,11 +1,26 @@
 /**
  * Cognify - NOAH Authentication & Role Manager
- * Handles Student Sign-In vs Admin/Staff Login permissions
+ * Real student accounts (email + password) via the backend, plus a
+ * server-verified shared admin passkey. No client-side trust of identity.
  */
 
 class AuthManager {
     constructor() {
-        this.session = window.dataStore.getAuthSession();
+        this.session = null;
+        this.ready = this._restoreSession();
+    }
+
+    async _restoreSession() {
+        if (!window.dataStore.getToken()) {
+            this.session = null;
+            return;
+        }
+        try {
+            this.session = await window.dataStore._fetch('/auth/me');
+        } catch (e) {
+            window.dataStore.clearToken();
+            this.session = null;
+        }
     }
 
     getCurrentUser() {
@@ -13,40 +28,56 @@ class AuthManager {
     }
 
     isAdmin() {
-        return this.session && this.session.role === 'admin';
+        return !!(this.session && this.session.role === 'admin');
     }
 
     isStudent() {
-        return this.session && this.session.role === 'student';
+        return !!(this.session && this.session.role === 'student');
     }
 
-    loginAsStudent(name, id, gradeLevel) {
-        this.session = {
-            role: 'student',
-            studentName: name || 'Student',
-            studentId: id || ('STU-' + Math.floor(1000 + Math.random() * 9000)),
-            gradeLevel: gradeLevel || 'Class 5'
-        };
-        window.dataStore.setAuthSession(this.session);
+    async signupStudent(email, password, name, studentId, gradeLevel) {
+        const res = await window.dataStore._fetch('/auth/signup', {
+            method: 'POST',
+            body: JSON.stringify({
+                email,
+                password,
+                student_name: name,
+                student_id: studentId,
+                grade_level: gradeLevel
+            })
+        });
+        window.dataStore.setToken(res.token);
+        this.session = res.user;
         return this.session;
     }
 
-    loginAsAdmin(passkey) {
-        if (passkey === 'admin' || passkey === 'admin123' || passkey === '1234') {
-            this.session = {
-                role: 'admin',
-                adminName: 'Institute Admin',
-                passkey: 'verified'
-            };
-            window.dataStore.setAuthSession(this.session);
+    async loginStudent(email, password) {
+        const res = await window.dataStore._fetch('/auth/login', {
+            method: 'POST',
+            body: JSON.stringify({ email, password })
+        });
+        window.dataStore.setToken(res.token);
+        this.session = res.user;
+        return this.session;
+    }
+
+    async loginAsAdmin(passkey) {
+        try {
+            const res = await window.dataStore._fetch('/auth/admin-login', {
+                method: 'POST',
+                body: JSON.stringify({ passkey })
+            });
+            window.dataStore.setToken(res.token);
+            this.session = res.user;
             return { success: true, session: this.session };
-        } else {
-            return { success: false, message: 'Invalid Admin Passkey. Please try again.' };
+        } catch (e) {
+            return { success: false, message: e.message || 'Invalid Admin Passkey. Please try again.' };
         }
     }
 
     logout() {
-        this.loginAsStudent('Alex Mercer', 'STU-5001', 'Class 5');
+        this.session = null;
+        window.dataStore.clearToken();
     }
 }
 
