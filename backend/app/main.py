@@ -21,4 +21,8 @@ def health():
 
 
 FRONTEND_DIR = Path(__file__).resolve().parent.parent.parent
-app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
+if FRONTEND_DIR.joinpath("index.html").exists():
+    # Serves the frontend directly when running as a normal process (local dev,
+    # Render). On Vercel this directory isn't present in the function bundle —
+    # Vercel serves those static files itself, so mounting here is skipped.
+    app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
