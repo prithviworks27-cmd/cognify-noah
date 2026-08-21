@@ -182,6 +182,12 @@ class AppController {
         if (roleBtn) {
             roleBtn.innerText = window.authManager.isAdmin() ? "Switch to Student" : "Admin Login";
         }
+
+        // The floating NOAH widget is student-only — only visible while logged in as a student.
+        const widgetContainer = document.getElementById('noahWidgetContainer');
+        if (widgetContainer) {
+            widgetContainer.classList.toggle('hidden', !window.authManager.isStudent());
+        }
     }
 
     bindAuthEvents() {
