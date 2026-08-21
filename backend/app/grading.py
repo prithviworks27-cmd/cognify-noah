@@ -3,7 +3,97 @@ Server-side port of js/grading_engine.js — identical logic, kept here so the
 rubric (keywords/acceptedAnswers) never has to be sent to the student's
 browser to be graded.
 """
+import json
 import re
+
+import requests
+
+from app.config import settings
+
+GEMINI_MODEL = "gemini-3.6-flash"
+GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
+
+GRADE_RESPONSE_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "status": {"type": "string", "enum": ["correct", "partially_correct", "incorrect"]},
+        "score": {"type": "integer"},
+        "confidence": {"type": "number"},
+        "feedback": {"type": "string"},
+        "matchedKeywords": {"type": "array", "items": {"type": "string"}},
+        "missingKeywords": {"type": "array", "items": {"type": "string"}},
+    },
+    "required": ["status", "score", "confidence", "feedback", "matchedKeywords", "missingKeywords"],
+}
+
+
+def evaluate_answer_llm(question: dict, transcript: str) -> dict | None:
+    """Grades via Gemini. Returns None on any failure (missing key, network,
+    rate limit, malformed response) so the caller falls back to the
+    deterministic evaluate_answer() instead of failing the exam."""
+    if not settings.gemini_api_key:
+        return None
+
+    points = question.get("points") or 10
+    keywords = question.get("keywords") or []
+    accepted_answers = question.get("acceptedAnswers") or []
+    topic_tag = question.get("topicTag") or "General Knowledge"
+    question_text = question.get("text") or ""
+
+    if not transcript or not transcript.strip():
+        return None  # let the deterministic grader handle the trivial empty-answer case
+
+    prompt = f"""You are NOAH, a strict but fair AI oral examiner grading a student's spoken answer.
+
+Question: {question_text}
+Maximum points: {points}
+Acceptable reference answers: {accepted_answers}
+Key concepts expected: {keywords}
+Student's spoken answer (transcribed): "{transcript}"
+
+Grade the student's answer. Judge on understanding and correctness, not exact wording —
+accept paraphrasing and synonyms. "correct" only if the core concept is explained accurately
+and completely. "partially_correct" if some but not all key ideas are present. "incorrect" if
+the answer is wrong, off-topic, or too vague/incomplete.
+
+Respond in NOAH's voice: terse, formal, exam-officer tone (e.g. "Affirmative. Precise and
+complete response..." or "Incorrect response. Essential details regarding X were missing.").
+
+score must be an integer from 0 to {points} ({points} for correct, roughly half for
+partially_correct, 0 for incorrect). confidence is your certainty in this judgment, 0 to 1.
+matchedKeywords/missingKeywords should be drawn only from: {keywords}."""
+
+    try:
+        resp = requests.post(
+            GEMINI_URL,
+            params={"key": settings.gemini_api_key},
+            json={
+                "contents": [{"parts": [{"text": prompt}]}],
+                "generationConfig": {
+                    "responseMimeType": "application/json",
+                    "responseSchema": GRADE_RESPONSE_SCHEMA,
+                    "temperature": 0.2,
+                },
+            },
+            timeout=8,
+        )
+        resp.raise_for_status()
+        text = resp.json()["candidates"][0]["content"]["parts"][0]["text"]
+        result = json.loads(text)
+
+        return {
+            "status": result["status"],
+            "score": max(0, min(int(result["score"]), points)),
+            "maxScore": points,
+            "confidence": max(0.0, min(float(result["confidence"]), 1.0)),
+            "feedback": result["feedback"],
+            "matchedKeywords": result.get("matchedKeywords") or [],
+            "missingKeywords": result.get("missingKeywords") or [],
+            "topicTag": topic_tag,
+        }
+    except Exception:
+        return None
+
 
 EXPLANATORY_PHRASES = [
     "is a", "is an", "are", "caused by", "used to", "means", "defined as",

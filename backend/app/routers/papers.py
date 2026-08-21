@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.deps import get_current_principal, require_admin, require_student, Principal
-from app.grading import evaluate_answer
+from app.grading import evaluate_answer, evaluate_answer_llm
 from app.models import TestPaper, User
 from app.schemas import GradeRequest, GradeResult, PaperCreate, PaperOut
 
@@ -104,5 +104,5 @@ def grade_question(
 
     # The rubric is read server-side from the DB — never trust a client-supplied one.
     question = paper.questions[question_index]
-    result = evaluate_answer(question, payload.transcript)
+    result = evaluate_answer_llm(question, payload.transcript) or evaluate_answer(question, payload.transcript)
     return GradeResult(**result)

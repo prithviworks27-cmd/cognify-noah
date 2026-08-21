@@ -19,6 +19,10 @@ class Settings(BaseSettings):
     jwt_secret: str
     admin_passkey: str
 
+    # Optional: if unset, grading silently falls back to the keyword-based
+    # grader instead of failing the app at startup.
+    gemini_api_key: str = ""
+
     class Config:
         env_file = str(BACKEND_DIR / ".env")
 
