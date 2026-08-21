@@ -835,6 +835,39 @@ class AppController {
         document.getElementById('kpiFlaggedStudents').innerText = flaggedCount;
         document.getElementById('kpiActivePapers').innerText = papers.filter(p => p.active).length;
 
+        const subjectsById = Object.fromEntries(window.dataStore.getSubjects().map(s => [s.id, s.name]));
+        const papersTbody = document.getElementById('staffPapersTbody');
+        if (papersTbody) {
+            if (papers.length === 0) {
+                papersTbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="py-8 text-center text-gray-500 italic text-sm">
+                            No test papers yet. Upload one above to get started.
+                        </td>
+                    </tr>
+                `;
+            } else {
+                papersTbody.innerHTML = papers.map(p => `
+                    <tr class="border-b border-gray-800/60 hover:bg-gray-900/40 transition">
+                        <td class="py-3 px-4 font-semibold text-white">${p.title}</td>
+                        <td class="py-3 px-4 text-sm text-gray-300">${subjectsById[p.subjectId] || '—'}</td>
+                        <td class="py-3 px-4 text-xs text-gray-400 font-mono">${p.gradeLevel}</td>
+                        <td class="py-3 px-4 text-xs text-gray-400">${p.questions.length}</td>
+                        <td class="py-3 px-4">
+                            <span class="px-2.5 py-1 rounded-full text-xs font-mono ${
+                                p.active ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-500/30' : 'bg-gray-800 text-gray-400 border border-gray-700'
+                            }">${p.active ? 'Active' : 'Inactive'}</span>
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                            <button data-delete-paper="${p.id}" class="px-3 py-1.5 rounded-lg bg-blue-950/60 hover:bg-blue-900/60 border border-blue-500/30 text-blue-300 text-xs font-semibold transition">
+                                Remove
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        }
+
         const tbody = document.getElementById('staffResultsTbody');
         if (tbody) {
             if (results.length === 0) {
@@ -887,6 +920,22 @@ class AppController {
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
+            });
+        }
+
+        const papersTbody = document.getElementById('staffPapersTbody');
+        if (papersTbody) {
+            papersTbody.addEventListener('click', async (e) => {
+                const btn = e.target.closest('[data-delete-paper]');
+                if (!btn) return;
+                const paperId = btn.dataset.deletePaper;
+                if (!confirm('Remove this test paper? Students will no longer be able to take it.')) return;
+                try {
+                    await window.dataStore.deleteTestPaper(paperId);
+                    await this.renderStaffDashboard();
+                } catch (err) {
+                    alert(`Failed to remove paper: ${err.message}`);
+                }
             });
         }
     }
