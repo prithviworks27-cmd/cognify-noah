@@ -75,7 +75,10 @@ matchedKeywords/missingKeywords should be drawn only from: {keywords}."""
                     "temperature": 0.2,
                 },
             },
-            timeout=8,
+            # gemini-3.6-flash is a thinking model with variable response time
+            # (observed 4-9s+ even for trivial prompts) — 8s was cutting off
+            # real, in-progress responses and silently falling back.
+            timeout=25,
         )
         resp.raise_for_status()
         text = resp.json()["candidates"][0]["content"]["parts"][0]["text"]
