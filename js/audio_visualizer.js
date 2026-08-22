@@ -78,7 +78,7 @@ class UltronParticleCore {
         this.scene = new THREE.Scene();
         this.scene.fog = new THREE.FogExp2(0x080808, 0.008);
 
-        this.camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 2000);
+        this.camera = new THREE.PerspectiveCamera(this._fovForAspect(width / height), width / height, 0.1, 2000);
         this.camera.position.set(0, 0, 95);
 
         // 2. Renderer
@@ -302,12 +302,31 @@ class UltronParticleCore {
         return t * t * (3 - 2 * t);
     }
 
+    // The container is only ever half the viewport width (the landing page's
+    // left/right split) but full viewport height, so its aspect ratio is much
+    // narrower than a typical full-screen view. THREE.PerspectiveCamera's fov
+    // is a VERTICAL angle — horizontal field of view shrinks along with a
+    // narrowing aspect ratio, so a fixed fov crops the sphere's left/right
+    // edges whenever the window (and so the container) isn't wide relative to
+    // its height, e.g. a non-maximized browser window. Widening the vertical
+    // fov as aspect drops below 1 keeps the horizontal fov — and so the
+    // sphere's full width — constant instead of shrinking.
+    _fovForAspect(aspect) {
+        const BASE_FOV_DEG = 60;
+        if (aspect >= 1) return BASE_FOV_DEG;
+        const halfBaseFovRad = THREE.MathUtils.degToRad(BASE_FOV_DEG) / 2;
+        const halfFovRad = Math.atan(Math.tan(halfBaseFovRad) / aspect);
+        return THREE.MathUtils.radToDeg(halfFovRad) * 2;
+    }
+
     onWindowResize() {
         if (!this.container || !this.renderer || !this.camera) return;
         const width = this.container.clientWidth || window.innerWidth;
         const height = this.container.clientHeight || 320;
+        const aspect = width / height;
 
-        this.camera.aspect = width / height;
+        this.camera.fov = this._fovForAspect(aspect);
+        this.camera.aspect = aspect;
         this.camera.updateProjectionMatrix();
 
         this.renderer.setSize(width, height);
