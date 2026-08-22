@@ -28,33 +28,33 @@
     }
     </script>
 </head>
-<body class="min-h-screen text-gray-100 flex flex-col relative selection:bg-blue-500 selection:text-white bg-[#07080c] overflow-x-hidden">
+<body class="min-h-screen flex flex-col relative selection:bg-[#FF6901] selection:text-[#080808] bg-[#080808] text-[#F2F2F0] overflow-x-hidden">
 
     <!-- Top Navigation Header -->
-    <header class="sticky top-0 z-40 glass-card border-b border-blue-950/60 bg-gray-950/80 backdrop-blur-md">
+    <header class="sticky top-0 z-40 bg-[#080808] border-b border-[#1A1A1A]">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
             <div class="flex items-center gap-3 cursor-pointer" onclick="app.switchView('landing')">
-                <img src="assets/cognify_icon.png" alt="Cognify" class="w-10 h-10 rounded-xl shadow-lg shadow-blue-900/50 object-cover">
+                <img src="assets/cognify_icon.png" alt="Cognify" class="w-10 h-10 rounded-md object-cover">
                 <div>
                     <div class="flex items-center gap-2">
-                        <span class="text-xl font-black tracking-wider text-white">COGNIFY</span>
-                        <span class="text-xs px-2 py-0.5 rounded bg-blue-950 text-blue-400 border border-blue-500/30 font-mono font-bold">NOAH AI</span>
+                        <span class="text-xl font-bold tracking-tight text-[#F2F2F0] [font-family:'Darker_Grotesque']">COGNIFY</span>
+                        <span class="text-[11px] px-2 py-0.5 rounded-sm bg-[#1A1A1A] text-[#FF6901] font-mono font-medium tracking-[0.1em] uppercase">NOAH AI</span>
                     </div>
-                    <span class="text-xs text-gray-400 block font-mono">Oral Examiner</span>
+                    <span class="text-xs text-[#4A4A49] block font-mono">Oral Examiner</span>
                 </div>
             </div>
 
             <!-- Navigation Links -->
-            <nav class="hidden md:flex items-center gap-2">
-                <button data-view-target="landing" class="px-4 py-2 rounded-xl text-sm font-semibold text-gray-300 hover:text-white hover:bg-gray-800/50 transition">
-                    Home & Showcase
+            <nav class="hidden md:flex items-center gap-1">
+                <button data-view-target="landing" class="px-4 py-2 rounded-sm text-xs font-mono uppercase tracking-[0.08em] text-[#4A4A49] hover:text-[#FF6901] transition">
+                    Home &amp; Showcase
                 </button>
-                <button data-view-target="student-kiosk" class="px-4 py-2 rounded-xl text-sm font-semibold text-gray-300 hover:text-white hover:bg-gray-800/50 transition flex items-center gap-2">
-                    <i data-lucide="graduation-cap" class="w-4 h-4 text-blue-400"></i>
+                <button data-view-target="student-kiosk" class="px-4 py-2 rounded-sm text-xs font-mono uppercase tracking-[0.08em] text-[#4A4A49] hover:text-[#FF6901] transition flex items-center gap-2">
+                    <i data-lucide="graduation-cap" class="w-4 h-4"></i>
                     <span>Student Portal</span>
                 </button>
-                <button data-view-target="staff-dashboard" class="px-4 py-2 rounded-xl text-sm font-semibold text-gray-300 hover:text-white hover:bg-gray-800/50 transition flex items-center gap-2">
-                    <i data-lucide="shield-check" class="w-4 h-4 text-cyan-400"></i>
+                <button data-view-target="staff-dashboard" class="px-4 py-2 rounded-sm text-xs font-mono uppercase tracking-[0.08em] text-[#4A4A49] hover:text-[#FF6901] transition flex items-center gap-2">
+                    <i data-lucide="shield-check" class="w-4 h-4"></i>
                     <span>Admin Dashboard</span>
                 </button>
             </nav>
@@ -72,25 +72,25 @@
             <div id="landingHeroContent" class="relative z-10 w-full md:w-1/2 flex flex-col items-center md:items-start justify-center text-center md:text-left px-6 sm:px-10 md:px-14 py-16 space-y-6 transition-all duration-700">
 
                 <!-- System Status Tag -->
-                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-950/70 border border-blue-500/50 text-blue-400 text-xs font-mono font-bold tracking-widest uppercase animate-pulse">
-                    <span class="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span>
+                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-sm border border-[#1A1A1A] text-[#4A4A49] text-[11px] font-mono font-medium tracking-[0.12em] uppercase">
+                    <span class="w-[9px] h-[9px] bg-[#FF6901]"></span>
                     <span>NOAH Audio Neural Engine • Active</span>
                 </div>
 
-                <!-- Giant Glowing NOAH Title -->
-                <h1 class="text-6xl sm:text-7xl lg:text-8xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-blue-500 to-cyan-400 text-ultron-glow uppercase">
+                <!-- Giant NOAH Title -->
+                <h1 class="text-6xl sm:text-7xl lg:text-8xl font-bold tracking-[-0.02em] text-[#F2F2F0] uppercase">
                     NOAH
                 </h1>
 
                 <!-- Action Buttons -->
-                <div class="flex flex-wrap items-center justify-center md:justify-start gap-5 pt-2">
-                    <button data-view-target="student-kiosk" class="btn-ultron px-8 py-4 rounded-2xl font-bold text-white shadow-2xl flex items-center gap-3 text-base">
-                        <i data-lucide="graduation-cap" class="w-6 h-6"></i>
+                <div class="flex flex-wrap items-center justify-center md:justify-start gap-4 pt-2">
+                    <button data-view-target="student-kiosk" class="btn-ultron px-8 py-4 font-mono font-medium flex items-center gap-3 text-sm uppercase tracking-[0.04em]">
+                        <i data-lucide="graduation-cap" class="w-5 h-5"></i>
                         <span>Launch Student Portal</span>
                     </button>
 
-                    <button data-view-target="staff-dashboard" class="px-8 py-4 rounded-2xl glass-card-cyan hover:bg-cyan-950/50 text-cyan-300 font-bold flex items-center gap-3 text-base transition border border-cyan-500/40 shadow-xl">
-                        <i data-lucide="shield-check" class="w-6 h-6"></i>
+                    <button data-view-target="staff-dashboard" class="px-8 py-4 rounded-full border border-[#1A1A1A] hover:border-[#4A4A49] text-[#F2F2F0] font-mono font-medium flex items-center gap-3 text-sm uppercase tracking-[0.04em] transition">
+                        <i data-lucide="shield-check" class="w-5 h-5"></i>
                         <span>Admin Dashboard</span>
                     </button>
                 </div>
@@ -109,18 +109,18 @@
         <section id="view-student-kiosk" class="view-panel hidden max-w-5xl mx-auto px-4 py-12">
             
             <div id="studentDetailStep">
-                <div class="flex flex-wrap items-center justify-between border-b border-gray-800 pb-6 mb-8 gap-4">
+                <div class="flex flex-wrap items-center justify-between border-b border-[#1A1A1A] pb-6 mb-8 gap-4">
                     <div>
-                        <span class="text-xs px-2.5 py-1 rounded bg-blue-950 text-blue-400 border border-blue-500/30 font-mono font-bold" id="displayStudentGrade">Class 5</span>
-                        <h2 class="text-3xl font-extrabold text-white mt-1">Welcome, <span id="displayStudentName" class="text-blue-400">Student</span></h2>
-                        <span class="text-xs text-gray-400 font-mono">Student ID: <span id="displayStudentId">STU-5001</span></span>
+                        <span class="text-xs px-2.5 py-1 rounded bg-[#1A1A1A] text-[#4A4A49] border border-[#1A1A1A] font-mono font-bold" id="displayStudentGrade">Class 5</span>
+                        <h2 class="text-3xl font-extrabold text-[#F2F2F0] mt-1">Welcome, <span id="displayStudentName" class="text-[#4A4A49]">Student</span></h2>
+                        <span class="text-xs text-[#4A4A49] font-mono">Student ID: <span id="displayStudentId">STU-5001</span></span>
                     </div>
 
                     <div class="flex items-center gap-2">
-                        <button onclick="app.openAuthModal('student')" class="px-4 py-2 rounded-xl bg-gray-900 hover:bg-gray-800 border border-gray-700 text-xs font-semibold text-gray-300">
+                        <button onclick="app.openAuthModal('student')" class="px-4 py-2 rounded-xl bg-[#0d0d0d] hover:bg-[#1A1A1A] border border-[#1A1A1A] text-xs font-semibold text-[#F2F2F0]">
                             Switch Student Profile
                         </button>
-                        <button onclick="app.handleLogout()" class="px-4 py-2 rounded-xl bg-gray-900 hover:bg-gray-800 border border-gray-700 text-xs font-semibold text-gray-300">
+                        <button onclick="app.handleLogout()" class="px-4 py-2 rounded-xl bg-[#0d0d0d] hover:bg-[#1A1A1A] border border-[#1A1A1A] text-xs font-semibold text-[#F2F2F0]">
                             Log Out
                         </button>
                     </div>
@@ -128,17 +128,17 @@
 
                 <!-- Assigned Test Papers List -->
                 <div class="mb-12">
-                    <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                        <i data-lucide="book-open" class="w-5 h-5 text-blue-400"></i>
+                    <h3 class="text-xl font-bold text-[#F2F2F0] mb-4 flex items-center gap-2">
+                        <i data-lucide="book-open" class="w-5 h-5 text-[#4A4A49]"></i>
                         <span>Assigned Oral Test Papers</span>
                     </h3>
                     <div id="studentAssignedPapersList" class="grid sm:grid-cols-2 gap-6"></div>
                 </div>
 
                 <!-- Past Test History -->
-                <div class="glass-card p-6 rounded-2xl border border-gray-800">
-                    <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                        <i data-lucide="history" class="w-5 h-5 text-cyan-400"></i>
+                <div class="glass-card p-6 rounded-xl border border-[#1A1A1A]">
+                    <h3 class="text-lg font-bold text-[#F2F2F0] mb-4 flex items-center gap-2">
+                        <i data-lucide="history" class="w-5 h-5 text-[#4A4A49]"></i>
                         <span>Your Past Oral Test Results</span>
                     </h3>
                     <div id="studentPastResultsList" class="space-y-3"></div>
@@ -148,51 +148,51 @@
 
             <!-- Step 4: End-of-Test Result Dashboard -->
             <div id="examResultStep" class="hidden">
-                <div class="glass-card p-8 rounded-3xl border border-blue-500/40 max-w-3xl mx-auto">
-                    <div class="text-center mb-8 border-b border-gray-800 pb-6">
-                        <div class="w-16 h-16 rounded-2xl bg-emerald-950 border border-emerald-500/50 flex items-center justify-center text-emerald-400 mx-auto mb-4">
+                <div class="glass-card p-8 rounded-xl border border-[#1A1A1A] max-w-3xl mx-auto">
+                    <div class="text-center mb-8 border-b border-[#1A1A1A] pb-6">
+                        <div class="w-16 h-16 rounded-xl bg-[#00C758]/10 border border-[#00C758]/30 flex items-center justify-center text-[#00C758] mx-auto mb-4">
                             <i data-lucide="award" class="w-8 h-8"></i>
                         </div>
-                        <h2 class="text-3xl font-extrabold text-white mb-1">Oral Examination Summary</h2>
-                        <p class="text-gray-400 text-sm"><span id="resultStudentName">Student</span> — <span id="resultPaperTitle">Paper</span></p>
+                        <h2 class="text-3xl font-extrabold text-[#F2F2F0] mb-1">Oral Examination Summary</h2>
+                        <p class="text-[#4A4A49] text-sm"><span id="resultStudentName">Student</span> — <span id="resultPaperTitle">Paper</span></p>
                     </div>
 
                     <div class="grid sm:grid-cols-3 gap-6 mb-8">
-                        <div class="bg-gray-950 p-5 rounded-2xl border border-gray-800 text-center">
-                            <span class="text-xs text-gray-400 font-mono block mb-1">Final Score</span>
-                            <span id="resultScoreDisplay" class="text-4xl font-black text-white">0%</span>
+                        <div class="bg-[#090909] p-5 rounded-xl border border-[#1A1A1A] text-center">
+                            <span class="text-xs text-[#4A4A49] font-mono block mb-1">Final Score</span>
+                            <span id="resultScoreDisplay" class="text-4xl font-black text-[#F2F2F0]">0%</span>
                         </div>
-                        <div class="bg-gray-950 p-5 rounded-2xl border border-gray-800 text-center">
-                            <span class="text-xs text-gray-400 font-mono block mb-1">Evaluation Status</span>
+                        <div class="bg-[#090909] p-5 rounded-xl border border-[#1A1A1A] text-center">
+                            <span class="text-xs text-[#4A4A49] font-mono block mb-1">Evaluation Status</span>
                             <div class="mt-2"><span id="resultStatusBadge" class="px-3 py-1 rounded-full text-xs font-bold">Pass</span></div>
                         </div>
-                        <div class="bg-gray-950 p-5 rounded-2xl border border-gray-800 text-center">
-                            <span class="text-xs text-gray-400 font-mono block mb-1">Accuracy Breakdown</span>
-                            <div class="text-sm font-bold text-white mt-1">
-                                <span class="text-emerald-400" id="resultCorrectCount">0</span> Correct / 
-                                <span class="text-amber-400" id="resultPartialCount">0</span> Partial / 
-                                <span class="text-blue-400" id="resultWrongCount">0</span> Wrong
+                        <div class="bg-[#090909] p-5 rounded-xl border border-[#1A1A1A] text-center">
+                            <span class="text-xs text-[#4A4A49] font-mono block mb-1">Accuracy Breakdown</span>
+                            <div class="text-sm font-bold text-[#F2F2F0] mt-1">
+                                <span class="text-[#00C758]" id="resultCorrectCount">0</span> Correct / 
+                                <span class="text-[#FF6901]" id="resultPartialCount">0</span> Partial / 
+                                <span class="text-[#4A4A49]" id="resultWrongCount">0</span> Wrong
                             </div>
                         </div>
                     </div>
 
                     <div class="space-y-4 mb-8">
-                        <div class="bg-gray-950/80 p-4 rounded-xl border border-gray-800">
-                            <span class="text-xs font-mono text-gray-400 block mb-2 font-bold">Struggling Topics Identified:</span>
+                        <div class="bg-[#090909] p-4 rounded-xl border border-[#1A1A1A]">
+                            <span class="text-xs font-mono text-[#4A4A49] block mb-2 font-bold">Struggling Topics Identified:</span>
                             <div id="resultStrugglingTopics" class="flex flex-wrap gap-2"></div>
                         </div>
 
-                        <div class="bg-gray-950/80 p-4 rounded-xl border border-gray-800">
-                            <span class="text-xs font-mono text-gray-400 block mb-1 font-bold">Pronunciation & Audio Clarity Note:</span>
-                            <p id="resultPronunciationNote" class="text-xs text-gray-300 font-mono"></p>
+                        <div class="bg-[#090909] p-4 rounded-xl border border-[#1A1A1A]">
+                            <span class="text-xs font-mono text-[#4A4A49] block mb-1 font-bold">Pronunciation & Audio Clarity Note:</span>
+                            <p id="resultPronunciationNote" class="text-xs text-[#F2F2F0] font-mono"></p>
                         </div>
                     </div>
 
                     <div class="flex items-center justify-between">
-                        <button onclick="app.switchView('student-kiosk'); document.getElementById('examResultStep').classList.add('hidden'); document.getElementById('studentDetailStep').classList.remove('hidden');" class="px-6 py-3 rounded-xl bg-gray-800 hover:bg-gray-700 text-white font-semibold text-sm">
+                        <button onclick="app.switchView('student-kiosk'); document.getElementById('examResultStep').classList.add('hidden'); document.getElementById('studentDetailStep').classList.remove('hidden');" class="px-6 py-3 rounded-xl bg-[#1A1A1A] hover:bg-[#1A1A1A] text-[#F2F2F0] font-semibold text-sm">
                             Back to Student Portal
                         </button>
-                        <button onclick="window.print()" class="btn-ultron px-6 py-3 rounded-xl font-bold text-white text-sm flex items-center gap-2">
+                        <button onclick="window.print()" class="btn-ultron px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2">
                             <i data-lucide="printer" class="w-4 h-4"></i>
                             <span>Print Report</span>
                         </button>
@@ -207,15 +207,15 @@
         <section id="view-staff-dashboard" class="view-panel hidden max-w-7xl mx-auto px-4 py-12">
             <div class="flex flex-wrap items-center justify-between mb-8 gap-4">
                 <div>
-                    <h2 class="text-3xl font-extrabold text-white">Admin Management & Analytics</h2>
-                    <p class="text-gray-400 text-sm">Upload PDF or Photo test papers for NOAH to ask students one by one.</p>
+                    <h2 class="text-3xl font-extrabold text-[#F2F2F0]">Admin Management & Analytics</h2>
+                    <p class="text-[#4A4A49] text-sm">Upload PDF or Photo test papers for NOAH to ask students one by one.</p>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button id="exportCsvBtn" class="px-4 py-2.5 rounded-xl glass-card-cyan hover:bg-cyan-950/40 text-cyan-300 font-semibold text-sm flex items-center gap-2 transition">
+                    <button id="exportCsvBtn" class="px-4 py-2.5 rounded-xl glass-card-cyan hover:bg-[#1A1A1A] text-[#4A4A49] font-semibold text-sm flex items-center gap-2 transition">
                         <i data-lucide="download" class="w-4 h-4"></i>
                         <span>Export Results (CSV)</span>
                     </button>
-                    <button onclick="app.handleLogout()" class="px-4 py-2.5 rounded-xl bg-gray-900 hover:bg-gray-800 border border-gray-700 text-gray-300 font-semibold text-sm transition">
+                    <button onclick="app.handleLogout()" class="px-4 py-2.5 rounded-xl bg-[#0d0d0d] hover:bg-[#1A1A1A] border border-[#1A1A1A] text-[#F2F2F0] font-semibold text-sm transition">
                         Log Out
                     </button>
                 </div>
@@ -223,68 +223,68 @@
 
             <!-- KPI Cards -->
             <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-                <div class="glass-card p-6 rounded-2xl border border-gray-800">
-                    <span class="text-xs font-mono text-gray-400 block mb-1">Total Oral Tests Taken</span>
-                    <span id="kpiTotalTests" class="text-3xl font-black text-white">0</span>
+                <div class="glass-card p-6 rounded-xl border border-[#1A1A1A]">
+                    <span class="text-xs font-mono text-[#4A4A49] block mb-1">Total Oral Tests Taken</span>
+                    <span id="kpiTotalTests" class="text-3xl font-black text-[#F2F2F0]">0</span>
                 </div>
-                <div class="glass-card p-6 rounded-2xl border border-gray-800">
-                    <span class="text-xs font-mono text-gray-400 block mb-1">Class Average Score</span>
-                    <span id="kpiAvgScore" class="text-3xl font-black text-emerald-400">0%</span>
+                <div class="glass-card p-6 rounded-xl border border-[#1A1A1A]">
+                    <span class="text-xs font-mono text-[#4A4A49] block mb-1">Class Average Score</span>
+                    <span id="kpiAvgScore" class="text-3xl font-black text-[#00C758]">0%</span>
                 </div>
-                <div class="glass-card p-6 rounded-2xl border border-gray-800">
-                    <span class="text-xs font-mono text-gray-400 block mb-1">Flagged Audio / Needs Review</span>
-                    <span id="kpiFlaggedStudents" class="text-3xl font-black text-blue-400">0</span>
+                <div class="glass-card p-6 rounded-xl border border-[#1A1A1A]">
+                    <span class="text-xs font-mono text-[#4A4A49] block mb-1">Flagged Audio / Needs Review</span>
+                    <span id="kpiFlaggedStudents" class="text-3xl font-black text-[#4A4A49]">0</span>
                 </div>
-                <div class="glass-card p-6 rounded-2xl border border-gray-800">
-                    <span class="text-xs font-mono text-gray-400 block mb-1">Active Test Papers</span>
-                    <span id="kpiActivePapers" class="text-3xl font-black text-cyan-400">0</span>
+                <div class="glass-card p-6 rounded-xl border border-[#1A1A1A]">
+                    <span class="text-xs font-mono text-[#4A4A49] block mb-1">Active Test Papers</span>
+                    <span id="kpiActivePapers" class="text-3xl font-black text-[#4A4A49]">0</span>
                 </div>
             </div>
 
             <!-- PDF & PHOTO TEST PAPER UPLOADER (ADMIN) -->
-            <div class="glass-card p-8 rounded-3xl border border-blue-500/40 mb-12 shadow-2xl">
-                <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                    <i data-lucide="file-up" class="w-5 h-5 text-blue-400"></i>
+            <div class="glass-card p-8 rounded-xl border border-[#1A1A1A] mb-12">
+                <h3 class="text-xl font-bold text-[#F2F2F0] mb-2 flex items-center gap-2">
+                    <i data-lucide="file-up" class="w-5 h-5 text-[#4A4A49]"></i>
                     <span>Upload Test Paper (PDF Document or Image/Photo)</span>
                 </h3>
-                <p class="text-xs text-gray-400 mb-6">
+                <p class="text-xs text-[#4A4A49] mb-6">
                     Drop your test paper file below. NOAH will automatically parse the questions so he can ask them verbally one by one to your students!
                 </p>
 
                 <!-- Drag and Drop Area -->
-                <div id="pdfPhotoDropZone" class="border-2 border-dashed border-gray-700 hover:border-blue-500/80 rounded-2xl p-10 text-center cursor-pointer transition bg-gray-950/60 group mb-6">
-                    <div class="w-16 h-16 rounded-2xl bg-blue-950/80 border border-blue-500/40 flex items-center justify-center text-blue-400 mx-auto mb-4 group-hover:scale-110 transition">
+                <div id="pdfPhotoDropZone" class="border-2 border-dashed border-[#1A1A1A] hover:border-[#1A1A1A] rounded-xl p-10 text-center cursor-pointer transition bg-[#090909] group mb-6">
+                    <div class="w-16 h-16 rounded-xl bg-[#1A1A1A] border border-[#1A1A1A] flex items-center justify-center text-[#4A4A49] mx-auto mb-4 group-hover:scale-110 transition">
                         <i data-lucide="upload-cloud" class="w-8 h-8"></i>
                     </div>
-                    <h4 class="text-base font-bold text-white mb-1">Drag & Drop your PDF or Photo Paper here</h4>
-                    <p class="text-xs text-gray-400 mb-4">Supports <span class="text-blue-400 font-mono font-bold">.PDF</span>, <span class="text-blue-400 font-mono font-bold">.PNG</span>, <span class="text-blue-400 font-mono font-bold">.JPG</span>, <span class="text-blue-400 font-mono font-bold">.JPEG</span> files</p>
-                    <button type="button" class="btn-ultron px-5 py-2.5 rounded-xl font-bold text-xs text-white">
+                    <h4 class="text-base font-bold text-[#F2F2F0] mb-1">Drag & Drop your PDF or Photo Paper here</h4>
+                    <p class="text-xs text-[#4A4A49] mb-4">Supports <span class="text-[#4A4A49] font-mono font-bold">.PDF</span>, <span class="text-[#4A4A49] font-mono font-bold">.PNG</span>, <span class="text-[#4A4A49] font-mono font-bold">.JPG</span>, <span class="text-[#4A4A49] font-mono font-bold">.JPEG</span> files</p>
+                    <button type="button" class="btn-ultron px-5 py-2.5 rounded-xl font-bold text-xs">
                         Browse File
                     </button>
                     <input type="file" id="pdfPhotoFileInput" accept=".pdf,.png,.jpg,.jpeg,.webp" class="hidden">
                 </div>
 
                 <!-- File Parsing Status Notification -->
-                <div id="fileParsingStatus" class="hidden p-4 rounded-xl bg-cyan-950/60 border border-cyan-500/40 text-cyan-300 text-xs font-mono mb-6 animate-pulse"></div>
+                <div id="fileParsingStatus" class="hidden p-4 rounded-xl bg-[#1A1A1A] border border-[#1A1A1A] text-[#4A4A49] text-xs font-mono mb-6 animate-pulse"></div>
 
                 <!-- Extracted Questions Preview Panel -->
-                <div id="extractedQuestionsPreviewContainer" class="hidden space-y-6 pt-4 border-t border-gray-800">
+                <div id="extractedQuestionsPreviewContainer" class="hidden space-y-6 pt-4 border-t border-[#1A1A1A]">
                     <div class="flex items-center justify-between">
-                        <h4 class="text-lg font-bold text-white flex items-center gap-2">
-                            <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400"></i>
+                        <h4 class="text-lg font-bold text-[#F2F2F0] flex items-center gap-2">
+                            <i data-lucide="check-circle-2" class="w-5 h-5 text-[#00C758]"></i>
                             <span>Extracted Test Paper Questions Preview</span>
                         </h4>
-                        <span class="text-xs font-mono text-cyan-400">Parsed by NOAH OCR Engine</span>
+                        <span class="text-xs font-mono text-[#4A4A49]">Parsed by NOAH OCR Engine</span>
                     </div>
 
                     <div class="grid sm:grid-cols-3 gap-4">
                         <div>
-                            <label class="block text-xs font-mono text-gray-400 mb-1">Paper Title</label>
-                            <input type="text" id="parsedPaperTitleInput" class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm">
+                            <label class="block text-xs font-mono text-[#4A4A49] mb-1">Paper Title</label>
+                            <input type="text" id="parsedPaperTitleInput" class="w-full px-4 py-2.5 rounded-xl bg-[#0d0d0d] border border-[#1A1A1A] text-[#F2F2F0] text-sm">
                         </div>
                         <div>
-                            <label class="block text-xs font-mono text-gray-400 mb-1">Assign Subject</label>
-                            <select id="parsedPaperSubjectSelect" class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm">
+                            <label class="block text-xs font-mono text-[#4A4A49] mb-1">Assign Subject</label>
+                            <select id="parsedPaperSubjectSelect" class="w-full px-4 py-2.5 rounded-xl bg-[#0d0d0d] border border-[#1A1A1A] text-[#F2F2F0] text-sm">
                                 <option value="sci-05">Science & Environment</option>
                                 <option value="math-05">Mathematics</option>
                                 <option value="eng-05">English & Grammar</option>
@@ -292,8 +292,8 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-mono text-gray-400 mb-1">Assign Target Grade</label>
-                            <select id="parsedPaperGradeSelect" class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm">
+                            <label class="block text-xs font-mono text-[#4A4A49] mb-1">Assign Target Grade</label>
+                            <select id="parsedPaperGradeSelect" class="w-full px-4 py-2.5 rounded-xl bg-[#0d0d0d] border border-[#1A1A1A] text-[#F2F2F0] text-sm">
                                 <option value="Class 5" selected>Class 5</option>
                                 <option value="Class 4">Class 4</option>
                                 <option value="Class 6">Class 6</option>
@@ -304,7 +304,7 @@
 
                     <div id="extractedQuestionsList" class="space-y-3 max-h-96 overflow-y-auto pr-2"></div>
 
-                    <button id="publishParsedPaperBtn" class="btn-ultron w-full py-3.5 rounded-xl font-bold text-white text-sm flex items-center justify-center gap-2 shadow-xl">
+                    <button id="publishParsedPaperBtn" class="btn-ultron w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2">
                         <i data-lucide="send" class="w-4 h-4"></i>
                         <span>Publish Extracted Paper to Class 5 Students</span>
                     </button>
@@ -312,12 +312,12 @@
             </div>
 
             <!-- Manage Test Papers (Add via uploader above / Remove here) -->
-            <div class="glass-card p-6 rounded-3xl border border-gray-800 mb-12">
-                <h3 class="text-xl font-bold text-white mb-6">Manage Test Papers</h3>
+            <div class="glass-card p-6 rounded-xl border border-[#1A1A1A] mb-12">
+                <h3 class="text-xl font-bold text-[#F2F2F0] mb-6">Manage Test Papers</h3>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
                         <thead>
-                            <tr class="border-b border-gray-800 text-xs font-mono text-gray-400 uppercase">
+                            <tr class="border-b border-[#1A1A1A] text-xs font-mono text-[#4A4A49] uppercase">
                                 <th class="py-3 px-4">Title</th>
                                 <th class="py-3 px-4">Subject</th>
                                 <th class="py-3 px-4">Grade</th>
@@ -332,12 +332,12 @@
             </div>
 
             <!-- Student Performance Table -->
-            <div class="glass-card p-6 rounded-3xl border border-gray-800">
-                <h3 class="text-xl font-bold text-white mb-6">All Student Oral Exam Submissions Log</h3>
+            <div class="glass-card p-6 rounded-xl border border-[#1A1A1A]">
+                <h3 class="text-xl font-bold text-[#F2F2F0] mb-6">All Student Oral Exam Submissions Log</h3>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
                         <thead>
-                            <tr class="border-b border-gray-800 text-xs font-mono text-gray-400 uppercase">
+                            <tr class="border-b border-[#1A1A1A] text-xs font-mono text-[#4A4A49] uppercase">
                                 <th class="py-3 px-4">Student</th>
                                 <th class="py-3 px-4">Test Title</th>
                                 <th class="py-3 px-4">Date</th>
@@ -357,24 +357,24 @@
 
 
     <!-- FULL-SCREEN NOAH 3D PARTICLE EXAMINATION KIOSK OVERLAY -->
-    <div id="noahFullScreenKiosk" class="hidden fixed inset-0 z-50 bg-gray-950/95 backdrop-blur-2xl flex flex-col justify-between p-6 overflow-y-auto">
+    <div id="noahFullScreenKiosk" class="hidden fixed inset-0 z-50 bg-[#090909] backdrop-blur-2xl flex flex-col justify-between p-6 overflow-y-auto">
         <!-- Top HUD Header -->
-        <div class="flex items-center justify-between border-b border-gray-800 pb-4 max-w-5xl mx-auto w-full">
+        <div class="flex items-center justify-between border-b border-[#1A1A1A] pb-4 max-w-5xl mx-auto w-full">
             <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-blue-950 border border-blue-500/40 flex items-center justify-center text-blue-400">
+                <div class="w-8 h-8 rounded-lg bg-[#1A1A1A] border border-[#1A1A1A] flex items-center justify-center text-[#4A4A49]">
                     <i data-lucide="bot" class="w-5 h-5"></i>
                 </div>
                 <div>
-                    <h3 id="kioskPaperTitle" class="text-lg font-bold text-white">Oral Exam</h3>
-                    <span id="kioskQuestionCounter" class="text-xs font-mono text-cyan-400">Question 1 of 1</span>
+                    <h3 id="kioskPaperTitle" class="text-lg font-bold text-[#F2F2F0]">Oral Exam</h3>
+                    <span id="kioskQuestionCounter" class="text-xs font-mono text-[#4A4A49]">Question 1 of 1</span>
                 </div>
             </div>
 
             <div class="flex items-center gap-4">
-                <div class="w-36 h-2 bg-gray-900 rounded-full overflow-hidden border border-gray-800">
-                    <div id="kioskProgressBar" class="h-full bg-gradient-to-r from-blue-500 to-amber-500 w-1/3 transition-all"></div>
+                <div class="w-36 h-2 bg-[#0d0d0d] rounded-full overflow-hidden border border-[#1A1A1A]">
+                    <div id="kioskProgressBar" class="h-full bg-gradient-to-r from-[#1A1A1A] to-[#FF6901] w-1/3 transition-all"></div>
                 </div>
-                <button id="exitKioskBtn" class="px-3 py-1.5 rounded-lg bg-gray-900 hover:bg-gray-800 border border-gray-700 text-xs font-mono text-gray-400 hover:text-white">
+                <button id="exitKioskBtn" class="px-3 py-1.5 rounded-lg bg-[#0d0d0d] hover:bg-[#1A1A1A] border border-[#1A1A1A] text-xs font-mono text-[#4A4A49] hover:text-[#F2F2F0]">
                     Exit Exam
                 </button>
             </div>
@@ -383,14 +383,14 @@
         <!-- CENTER HERO: NOAH 3D PARTICLE CORE (DOMINATES TOP/CENTER OF SCREEN) -->
         <div class="my-auto py-6 max-w-4xl mx-auto w-full flex flex-col items-center">
             
-            <div class="w-full max-w-xl h-80 rounded-3xl overflow-hidden relative mb-6 flex items-center justify-center border border-blue-500/30 bg-gray-950/80 shadow-2xl shadow-blue-950/50" id="fullKioskParticleContainer">
+            <div class="w-full max-w-xl h-80 rounded-xl overflow-hidden relative mb-6 flex items-center justify-center border border-[#1A1A1A] bg-[#090909]" id="fullKioskParticleContainer">
                 <!-- Three.js Canvas (#ultronCanvas) is re-parented here dynamically during exam -->
             </div>
 
             <!-- QUESTION ASKED DIRECTLY BENEATH NOAH -->
-            <div class="w-full max-w-3xl glass-card p-8 rounded-3xl border border-blue-500/40 text-center relative shadow-2xl">
-                <span class="text-xs font-mono text-blue-400 font-bold uppercase tracking-wider block mb-2">NOAH asks:</span>
-                <p id="kioskQuestionText" class="text-2xl font-bold text-white mb-6 leading-relaxed">
+            <div class="w-full max-w-3xl glass-card p-8 rounded-xl border border-[#1A1A1A] text-center relative">
+                <span class="text-xs font-mono text-[#4A4A49] font-bold uppercase tracking-wider block mb-2">NOAH asks:</span>
+                <p id="kioskQuestionText" class="text-2xl font-bold text-[#F2F2F0] mb-6 leading-relaxed">
                     Loading question...
                 </p>
 
@@ -399,22 +399,22 @@
 
                 <!-- Real-time STT Spoken Transcript Box -->
                 <div class="mb-6 text-left">
-                    <label class="block text-xs font-mono text-gray-400 mb-2">Spoken Answer Transcript (Real-time STT):</label>
-                    <div id="kioskTranscriptBox" class="w-full min-h-[90px] p-4 rounded-2xl bg-gray-900/90 border border-cyan-500/30 text-cyan-300 font-mono text-sm leading-relaxed">
+                    <label class="block text-xs font-mono text-[#4A4A49] mb-2">Spoken Answer Transcript (Real-time STT):</label>
+                    <div id="kioskTranscriptBox" class="w-full min-h-[90px] p-4 rounded-xl bg-[#0d0d0d] border border-[#1A1A1A] text-[#4A4A49] font-mono text-sm leading-relaxed">
                         Awaiting your spoken response...
                     </div>
                 </div>
 
                 <!-- Mic Action Controls -->
                 <div class="flex flex-wrap items-center justify-between gap-4">
-                    <button id="kioskMicSpeakBtn" class="btn-ultron px-8 py-4 rounded-2xl font-bold text-white text-base shadow-xl flex items-center gap-3">
+                    <button id="kioskMicSpeakBtn" class="btn-ultron px-8 py-4 rounded-xl font-bold text-base flex items-center gap-3">
                         <i data-lucide="mic" class="w-6 h-6"></i>
                         <span>Tap to Speak Response</span>
                     </button>
 
                     <div class="flex-grow max-w-md flex items-center gap-2">
-                        <input type="text" id="kioskTextInput" placeholder="Or type your answer manually..." class="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 text-sm text-white focus:outline-none focus:border-blue-500">
-                        <button id="kioskSubmitTextBtn" class="px-5 py-3 rounded-xl bg-gray-800 hover:bg-gray-700 text-white font-semibold text-sm">
+                        <input type="text" id="kioskTextInput" placeholder="Or type your answer manually..." class="w-full px-4 py-3 rounded-xl bg-[#0d0d0d] border border-[#1A1A1A] text-sm text-[#F2F2F0] focus:outline-none focus:border-[#1A1A1A]">
+                        <button id="kioskSubmitTextBtn" class="px-5 py-3 rounded-xl bg-[#1A1A1A] hover:bg-[#1A1A1A] text-[#F2F2F0] font-semibold text-sm">
                             Submit
                         </button>
                     </div>
@@ -423,42 +423,42 @@
 
         </div>
 
-        <div class="text-center text-xs font-mono text-gray-500">
+        <div class="text-center text-xs font-mono text-[#4A4A49]">
             Cognify Institute • NOAH Full-Screen Oral Exam Kiosk Mode
         </div>
     </div>
 
 
     <!-- AUTH / SIGN-IN MODAL -->
-    <div id="authModal" class="hidden fixed inset-0 z-50 bg-gray-950/80 backdrop-blur-md flex items-center justify-center p-4">
-        <div class="glass-card p-8 rounded-3xl border border-blue-500/40 max-w-md w-full relative shadow-2xl">
-            <button id="closeAuthModalBtn" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+    <div id="authModal" class="hidden fixed inset-0 z-50 bg-[#090909] backdrop-blur-md flex items-center justify-center p-4">
+        <div class="glass-card p-8 rounded-xl border border-[#1A1A1A] max-w-md w-full relative">
+            <button id="closeAuthModalBtn" class="absolute top-4 right-4 text-[#4A4A49] hover:text-[#F2F2F0]">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
 
             <!-- Student Log In Form -->
             <form id="studentLoginForm" class="space-y-4">
                 <div class="text-center mb-6">
-                    <div class="w-12 h-12 rounded-xl bg-blue-950 border border-blue-500/40 flex items-center justify-center text-blue-400 mx-auto mb-2">
+                    <div class="w-12 h-12 rounded-xl bg-[#1A1A1A] border border-[#1A1A1A] flex items-center justify-center text-[#4A4A49] mx-auto mb-2">
                         <i data-lucide="graduation-cap" class="w-6 h-6"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-white">Student Log In</h3>
-                    <p class="text-xs text-gray-400">Log in with your email to access your assigned test papers.</p>
+                    <h3 class="text-xl font-bold text-[#F2F2F0]">Student Log In</h3>
+                    <p class="text-xs text-[#4A4A49]">Log in with your email to access your assigned test papers.</p>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-mono text-gray-400 mb-1">Email</label>
-                    <input type="email" id="loginStudentEmail" required placeholder="you@gmail.com" class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm">
+                    <label class="block text-xs font-mono text-[#4A4A49] mb-1">Email</label>
+                    <input type="email" id="loginStudentEmail" required placeholder="you@gmail.com" class="w-full px-4 py-2.5 rounded-xl bg-[#0d0d0d] border border-[#1A1A1A] text-[#F2F2F0] text-sm">
                 </div>
                 <div>
-                    <label class="block text-xs font-mono text-gray-400 mb-1">Password</label>
-                    <input type="password" id="loginStudentPassword" required placeholder="Your password" class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm">
+                    <label class="block text-xs font-mono text-[#4A4A49] mb-1">Password</label>
+                    <input type="password" id="loginStudentPassword" required placeholder="Your password" class="w-full px-4 py-2.5 rounded-xl bg-[#0d0d0d] border border-[#1A1A1A] text-[#F2F2F0] text-sm">
                 </div>
 
-                <button type="submit" class="btn-ultron w-full py-3 rounded-xl font-bold text-white text-sm mt-2">
+                <button type="submit" class="btn-ultron w-full py-3 rounded-xl font-bold text-sm mt-2">
                     Log In
                 </button>
-                <button type="button" id="showStudentSignupBtn" class="w-full text-center text-xs font-mono text-blue-400 hover:underline pt-1">
+                <button type="button" id="showStudentSignupBtn" class="w-full text-center text-xs font-mono text-[#4A4A49] hover:underline pt-1">
                     New here? Create a student account
                 </button>
             </form>
@@ -466,42 +466,42 @@
             <!-- Student Sign Up Form -->
             <form id="studentSignupForm" class="hidden space-y-4">
                 <div class="text-center mb-6">
-                    <div class="w-12 h-12 rounded-xl bg-blue-950 border border-blue-500/40 flex items-center justify-center text-blue-400 mx-auto mb-2">
+                    <div class="w-12 h-12 rounded-xl bg-[#1A1A1A] border border-[#1A1A1A] flex items-center justify-center text-[#4A4A49] mx-auto mb-2">
                         <i data-lucide="graduation-cap" class="w-6 h-6"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-white">Create Student Account</h3>
-                    <p class="text-xs text-gray-400">Sign up with your email to start taking oral tests.</p>
+                    <h3 class="text-xl font-bold text-[#F2F2F0]">Create Student Account</h3>
+                    <p class="text-xs text-[#4A4A49]">Sign up with your email to start taking oral tests.</p>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-mono text-gray-400 mb-1">Full Name</label>
-                    <input type="text" id="signupStudentName" required placeholder="e.g. Alex Mercer" class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm">
+                    <label class="block text-xs font-mono text-[#4A4A49] mb-1">Full Name</label>
+                    <input type="text" id="signupStudentName" required placeholder="e.g. Alex Mercer" class="w-full px-4 py-2.5 rounded-xl bg-[#0d0d0d] border border-[#1A1A1A] text-[#F2F2F0] text-sm">
                 </div>
                 <div>
-                    <label class="block text-xs font-mono text-gray-400 mb-1">Email</label>
-                    <input type="email" id="signupStudentEmail" required placeholder="you@gmail.com" class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm">
+                    <label class="block text-xs font-mono text-[#4A4A49] mb-1">Email</label>
+                    <input type="email" id="signupStudentEmail" required placeholder="you@gmail.com" class="w-full px-4 py-2.5 rounded-xl bg-[#0d0d0d] border border-[#1A1A1A] text-[#F2F2F0] text-sm">
                 </div>
                 <div>
-                    <label class="block text-xs font-mono text-gray-400 mb-1">Password</label>
-                    <input type="password" id="signupStudentPassword" required minlength="6" placeholder="At least 6 characters" class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm">
+                    <label class="block text-xs font-mono text-[#4A4A49] mb-1">Password</label>
+                    <input type="password" id="signupStudentPassword" required minlength="6" placeholder="At least 6 characters" class="w-full px-4 py-2.5 rounded-xl bg-[#0d0d0d] border border-[#1A1A1A] text-[#F2F2F0] text-sm">
                 </div>
                 <div>
-                    <label class="block text-xs font-mono text-gray-400 mb-1">Student ID / Roll Number</label>
-                    <input type="text" id="signupStudentId" required placeholder="e.g. STU-5001" class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm font-mono">
+                    <label class="block text-xs font-mono text-[#4A4A49] mb-1">Student ID / Roll Number</label>
+                    <input type="text" id="signupStudentId" required placeholder="e.g. STU-5001" class="w-full px-4 py-2.5 rounded-xl bg-[#0d0d0d] border border-[#1A1A1A] text-[#F2F2F0] text-sm font-mono">
                 </div>
                 <div>
-                    <label class="block text-xs font-mono text-gray-400 mb-1">Class / Grade</label>
-                    <select id="signupStudentGrade" class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm">
+                    <label class="block text-xs font-mono text-[#4A4A49] mb-1">Class / Grade</label>
+                    <select id="signupStudentGrade" class="w-full px-4 py-2.5 rounded-xl bg-[#0d0d0d] border border-[#1A1A1A] text-[#F2F2F0] text-sm">
                         <option value="Class 4">Class 4</option>
                         <option value="Class 5" selected>Class 5</option>
                         <option value="Class 6">Class 6</option>
                     </select>
                 </div>
 
-                <button type="submit" class="btn-ultron w-full py-3 rounded-xl font-bold text-white text-sm mt-2">
+                <button type="submit" class="btn-ultron w-full py-3 rounded-xl font-bold text-sm mt-2">
                     Create Account & Enter Portal
                 </button>
-                <button type="button" id="showStudentLoginBtn" class="w-full text-center text-xs font-mono text-blue-400 hover:underline pt-1">
+                <button type="button" id="showStudentLoginBtn" class="w-full text-center text-xs font-mono text-[#4A4A49] hover:underline pt-1">
                     Already have an account? Log in
                 </button>
             </form>
@@ -509,25 +509,25 @@
             <!-- Admin Passkey Login Form -->
             <form id="adminLoginForm" class="hidden space-y-4">
                 <div class="text-center mb-6">
-                    <div class="w-12 h-12 rounded-xl bg-cyan-950 border border-cyan-500/40 flex items-center justify-center text-cyan-400 mx-auto mb-2">
+                    <div class="w-12 h-12 rounded-xl bg-[#1A1A1A] border border-[#1A1A1A] flex items-center justify-center text-[#4A4A49] mx-auto mb-2">
                         <i data-lucide="shield-check" class="w-6 h-6"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-white">Institute Admin Access</h3>
-                    <p class="text-xs text-gray-400">Enter the Admin Passkey to upload test papers and review student results.</p>
+                    <h3 class="text-xl font-bold text-[#F2F2F0]">Institute Admin Access</h3>
+                    <p class="text-xs text-[#4A4A49]">Enter the Admin Passkey to upload test papers and review student results.</p>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-mono text-gray-400 mb-1">Admin Passkey</label>
-                    <input type="password" id="authAdminPasskey" required placeholder="Enter passkey" class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm font-mono">
+                    <label class="block text-xs font-mono text-[#4A4A49] mb-1">Admin Passkey</label>
+                    <input type="password" id="authAdminPasskey" required placeholder="Enter passkey" class="w-full px-4 py-2.5 rounded-xl bg-[#0d0d0d] border border-[#1A1A1A] text-[#F2F2F0] text-sm font-mono">
                 </div>
 
-                <button type="submit" class="w-full py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-bold text-white text-sm shadow-lg shadow-cyan-950/50 mt-2">
+                <button type="submit" class="w-full py-3 rounded-xl bg-[#4A4A49] hover:bg-[#4A4A49] font-bold text-[#F2F2F0] text-sm mt-2">
                     Access Admin Dashboard
                 </button>
             </form>
 
-            <div class="mt-6 text-center pt-4 border-t border-gray-800">
-                <button id="toggleAuthModeBtn" class="text-xs font-mono text-cyan-400 hover:underline">
+            <div class="mt-6 text-center pt-4 border-t border-[#1A1A1A]">
+                <button id="toggleAuthModeBtn" class="text-xs font-mono text-[#4A4A49] hover:underline">
                     Need Admin Access? Sign in as Admin
                 </button>
             </div>
@@ -538,46 +538,46 @@
     <!-- FLOATING NOAH VOICE CHATBOT WIDGET -->
     <div id="noahWidgetContainer" class="hidden fixed bottom-6 right-6 z-40">
         <!-- Floating Trigger Button -->
-        <button id="widgetToggleBtn" class="w-16 h-16 rounded-full bg-gradient-to-tr from-blue-600 via-blue-500 to-amber-500 p-1 shadow-2xl shadow-blue-950 hover:scale-105 transition duration-300 relative group">
-            <div class="w-full h-full rounded-full bg-gray-950 flex items-center justify-center text-blue-400 group-hover:text-white transition">
+        <button id="widgetToggleBtn" class="w-16 h-16 rounded-full bg-gradient-to-tr from-[#1A1A1A] via-[#1A1A1A] to-[#FF6901] p-1 hover:scale-105 transition duration-300 relative group">
+            <div class="w-full h-full rounded-full bg-[#090909] flex items-center justify-center text-[#4A4A49] group-hover:text-[#F2F2F0] transition">
                 <i data-lucide="bot" class="w-8 h-8"></i>
             </div>
-            <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-blue-500 animate-ping"></span>
-            <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-blue-500"></span>
+            <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#4A4A49] animate-ping"></span>
+            <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#4A4A49]"></span>
         </button>
 
         <!-- Expandable Chatbot Window -->
-        <div id="noahWidgetWindow" class="hidden fixed bottom-24 right-6 w-96 max-w-[calc(100vw-3rem)] glass-card rounded-3xl border border-blue-500/40 shadow-2xl overflow-hidden transform transition-all duration-300 scale-95 opacity-0">
-            <div class="bg-gray-950/90 p-4 border-b border-gray-800 flex items-center justify-between">
+        <div id="noahWidgetWindow" class="hidden fixed bottom-24 right-6 w-96 max-w-[calc(100vw-3rem)] glass-card rounded-xl border border-[#1A1A1A] overflow-hidden transform transition-all duration-300 scale-95 opacity-0">
+            <div class="bg-[#090909] p-4 border-b border-[#1A1A1A] flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-lg bg-blue-950 border border-blue-500/40 flex items-center justify-center text-blue-400">
+                    <div class="w-8 h-8 rounded-lg bg-[#1A1A1A] border border-[#1A1A1A] flex items-center justify-center text-[#4A4A49]">
                         <i data-lucide="bot" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <h4 class="text-sm font-bold text-white">NOAH AI Widget</h4>
-                        <span class="text-[10px] font-mono text-blue-400 block">Ultron Speech Engine</span>
+                        <h4 class="text-sm font-bold text-[#F2F2F0]">NOAH AI Widget</h4>
+                        <span class="text-[10px] font-mono text-[#4A4A49] block">Ultron Speech Engine</span>
                     </div>
                 </div>
-                <button id="widgetCloseBtn" class="text-gray-400 hover:text-white p-1">
+                <button id="widgetCloseBtn" class="text-[#4A4A49] hover:text-[#F2F2F0] p-1">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
 
             <div class="p-4 space-y-4 max-h-[380px] overflow-y-auto">
-                <div class="bg-gray-950/80 p-3.5 rounded-2xl border border-blue-500/30 text-xs text-gray-300">
-                    <span class="font-mono text-blue-400 font-bold block mb-1">NOAH:</span>
+                <div class="bg-[#090909] p-3.5 rounded-xl border border-[#1A1A1A] text-xs text-[#F2F2F0]">
+                    <span class="font-mono text-[#4A4A49] font-bold block mb-1">NOAH:</span>
                     Greetings. Select an assigned paper to begin your examination.
                 </div>
 
                 <div>
-                    <label class="block text-[11px] font-mono text-gray-400 mb-1">Select Active Paper:</label>
-                    <select id="widgetPaperSelect" class="w-full px-3 py-2 rounded-xl bg-gray-900 border border-gray-700 text-xs text-white">
+                    <label class="block text-[11px] font-mono text-[#4A4A49] mb-1">Select Active Paper:</label>
+                    <select id="widgetPaperSelect" class="w-full px-3 py-2 rounded-xl bg-[#0d0d0d] border border-[#1A1A1A] text-xs text-[#F2F2F0]">
                         <option value="">-- Choose Paper --</option>
                     </select>
                 </div>
 
                 <div class="text-center pt-2">
-                    <button onclick="app.switchView('student-kiosk'); document.getElementById('widgetCloseBtn').click();" class="btn-ultron w-full py-2.5 rounded-xl font-bold text-xs text-white flex items-center justify-center gap-2">
+                    <button onclick="app.switchView('student-kiosk'); document.getElementById('widgetCloseBtn').click();" class="btn-ultron w-full py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2">
                         <i data-lucide="mic" class="w-4 h-4"></i>
                         <span>Start Voice Exam in Kiosk</span>
                     </button>
@@ -588,7 +588,7 @@
 
 
     <!-- Footer -->
-    <footer class="border-t border-gray-800/60 py-8 bg-gray-950/90 text-center text-xs text-gray-500 font-mono relative z-10">
+    <footer class="border-t border-[#1A1A1A] py-8 bg-[#090909] text-center text-xs text-[#4A4A49] font-mono relative z-10">
         <div class="max-w-7xl mx-auto px-4 flex flex-wrap items-center justify-between gap-4">
             <span>© 2026 Cognify Institute. All rights reserved.</span>
         </div>

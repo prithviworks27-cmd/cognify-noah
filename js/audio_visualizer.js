@@ -76,7 +76,7 @@ class UltronParticleCore {
 
         // 1. Scene & Camera
         this.scene = new THREE.Scene();
-        this.scene.fog = new THREE.FogExp2(0x07080c, 0.008);
+        this.scene.fog = new THREE.FogExp2(0x080808, 0.008);
 
         this.camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 2000);
         this.camera.position.set(0, 0, 95);
@@ -244,20 +244,20 @@ class UltronParticleCore {
 
             this.target.set(rx, py, rz);
 
-            // Color Palette Modulation
+            // Color Palette Modulation — monochrome white/grey at rest, the
+            // single orange accent (#FF6901, hue ~0.065) only asserts itself
+            // while NOAH is actively speaking, matching the "orange used
+            // sparingly for critical moments" rule from the design system.
             const pulse = 0.5 + 0.5 * Math.sin(time * 4 + theta * 3);
             if (this.mode === 'listening') {
-                const hue = 0.48 + pulse * 0.08;
-                const light = 0.4 + pulse * 0.3;
-                this.color.setHSL(hue, 1.0, light);
+                const light = 0.55 + pulse * 0.2;
+                this.color.setHSL(0.07, 0.2, light);
             } else if (this.mode === 'speaking') {
-                const hue = (0.62 + pulse * 0.08) % 1.0;
-                const light = 0.45 + pulse * 0.35;
-                this.color.setHSL(hue, 1.0, light);
+                const light = 0.45 + pulse * 0.25;
+                this.color.setHSL(0.065, 0.85, light);
             } else {
-                const hue = (0.58 + pulse * 0.04) % 1.0;
-                const light = 0.35 + pulse * 0.2;
-                this.color.setHSL(hue, 1.0, light);
+                const light = 0.55 + pulse * 0.2;
+                this.color.setHSL(0.06, 0.06, light);
             }
 
             this.positions[i].lerp(this.target, 0.1);

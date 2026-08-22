@@ -1,77 +1,84 @@
-/* Cognify - NOAH Ultron Theme Styles */
+/* Cognify - NOAH "Mission Control" Theme
+   Inspired by Website Design/Design.md — high-density dark mode, monochromatic
+   with a single orange accent, mono-first typography, hard 1px rails instead
+   of soft shadows/blur. */
 
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Darker+Grotesque:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 :root {
-    --bg-dark: #07080c;
-    --bg-card: #0d0f18;
-    --ultron-blue: #3b82f6;
-    --ultron-blue-deep: #1d4ed8;
-    --ultron-cyan: #00f0ff;
-    --ultron-gold: #ffb703;
+    /* Berkeley Mono isn't freely distributable — JetBrains Mono stands in for
+       it as the closest openly-licensed technical monospace. */
+    --bg: #080808;
+    --surface: #090909;
+    --fg: #F2F2F0;
+    --muted: #4A4A49;
+    --border: #1A1A1A;
+    --accent: #FF6901;
+    --success: #00C758;
+    --destructive: #FB2C36;
+
+    /* Legacy variable names some earlier styles still reference. */
+    --bg-dark: var(--bg);
+    --bg-card: var(--surface);
 }
 
 body {
-    font-family: 'Outfit', sans-serif;
-    background-color: var(--bg-dark);
-    color: #f1f5f9;
+    font-family: 'Archivo', sans-serif;
+    background-color: var(--bg);
+    color: var(--fg);
     overflow-x: hidden;
+}
+
+h1, h2, h3, h4 {
+    font-family: 'Darker Grotesque', sans-serif;
+    letter-spacing: -0.02em;
 }
 
 code, .font-mono {
     font-family: 'JetBrains Mono', monospace;
 }
 
-/* Glassmorphism Cards */
+/* Rail-and-frame containment — hard 1px borders instead of soft shadow/blur. */
 .glass-card {
-    background: rgba(13, 15, 24, 0.75);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(59, 130, 246, 0.2);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+    background: var(--surface);
+    border: 1px solid var(--border);
 }
 
 .glass-card-cyan {
-    background: rgba(13, 15, 24, 0.75);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(0, 240, 255, 0.25);
-    box-shadow: 0 8px 32px 0 rgba(0, 240, 255, 0.1);
+    background: var(--surface);
+    border: 1px solid var(--border);
 }
 
-/* Ultron Text Glow */
-.text-ultron-glow {
-    text-shadow: 0 0 12px rgba(59, 130, 246, 0.7), 0 0 24px rgba(29, 78, 216, 0.4);
-}
-
+/* Kept for HTML compatibility — glow removed per the "no soft shadows/blur,
+   hard borders only" rule. Foreground colour carries the emphasis instead. */
+.text-ultron-glow,
 .text-cyan-glow {
-    text-shadow: 0 0 12px rgba(0, 240, 255, 0.7), 0 0 24px rgba(0, 180, 216, 0.4);
+    text-shadow: none;
 }
 
-/* Glowing Buttons */
+/* Pill-shaped, off-white-on-black, mono label — the spec's button recipe. */
 .btn-ultron {
-    background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 50%, #1e3a8a 100%);
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
-    transition: all 0.3s ease;
+    background: var(--fg);
+    color: var(--bg);
+    font-family: 'JetBrains Mono', monospace;
+    border-radius: 9999px;
+    box-shadow: none;
+    transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease;
 }
 
 .btn-ultron:hover {
-    box-shadow: 0 0 30px rgba(59, 130, 246, 0.7);
-    transform: translateY(-2px);
+    transform: scale(1.03);
+    opacity: 0.9;
 }
 
-/* Animations */
+/* Status marks: small squares, not glowing dots. */
 @keyframes pulseGlow {
-    0%, 100% {
-        box-shadow: 0 0 15px rgba(59, 130, 246, 0.4), inset 0 0 15px rgba(59, 130, 246, 0.2);
-    }
-    50% {
-        box-shadow: 0 0 35px rgba(59, 130, 246, 0.8), inset 0 0 25px rgba(59, 130, 246, 0.4);
-    }
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
 }
 
 .animate-pulse-glow {
-    animation: pulseGlow 3s infinite ease-in-out;
+    animation: pulseGlow 2s infinite ease-in-out;
 }
 
 @keyframes floatAnim {
@@ -83,6 +90,12 @@ code, .font-mono {
     animation: floatAnim 4s infinite ease-in-out;
 }
 
+/* Flat, database-style rows — no radius, hard divider only. */
+.rail-row {
+    border-bottom: 1px solid var(--border);
+    padding: 22px 8px;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
     width: 6px;
@@ -90,14 +103,14 @@ code, .font-mono {
 }
 
 ::-webkit-scrollbar-track {
-    background: #07080c;
+    background: var(--bg);
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgba(59, 130, 246, 0.4);
-    border-radius: 4px;
+    background: var(--muted);
+    border-radius: 0;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(59, 130, 246, 0.8);
+    background: var(--accent);
 }
