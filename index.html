@@ -65,11 +65,22 @@
     <!-- MAIN VIEW CONTAINER -->
     <main class="flex-grow flex flex-col">
 
-        <!-- 1. LANDING PAGE: TITLE/LOGIN (LEFT) — NOAH PARTICLE CORE (RIGHT) -->
-        <section id="view-landing" class="view-panel flex-grow relative flex flex-col md:flex-row items-stretch min-h-[calc(100vh-5rem)] overflow-hidden">
+        <!-- 1. LANDING PAGE: NOAH's particle field is the whole page's ambient
+             presence (full-bleed canvas), biased toward the right so it still
+             reads as "on the right" without being boxed into a rectangle —
+             the text overlays it on the left instead of sitting in a
+             separate column next to it. -->
+        <section id="view-landing" class="view-panel flex-grow relative flex flex-col items-center justify-center min-h-[calc(100vh-5rem)] overflow-hidden">
 
-            <!-- LEFT: Title + Login -->
-            <div id="landingHeroContent" class="relative z-10 w-full md:w-1/2 flex flex-col items-center md:items-start justify-center text-center md:text-left px-6 sm:px-10 md:px-14 py-16 space-y-6 transition-all duration-700">
+            <!-- Full-page interactive particle field (NOAH is ambiently present everywhere) -->
+            <div id="ultronCanvasContainer" class="absolute inset-0 z-0">
+                <canvas id="ultronCanvas" class="w-full h-full block"></canvas>
+            </div>
+
+            <!-- Title + Login, overlaid on the left — pointer-events-none so
+                 clicks pass through to the canvas beneath except on the
+                 actual buttons. -->
+            <div id="landingHeroContent" class="relative z-10 w-full max-w-2xl flex flex-col items-center md:items-start justify-center text-center md:text-left px-6 sm:px-10 md:px-14 space-y-6 transition-all duration-700 pointer-events-none mr-auto">
 
                 <!-- System Status Tag -->
                 <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-sm border border-[#1A1A1A] text-[#4A4A49] text-[11px] font-mono font-medium tracking-[0.12em] uppercase">
@@ -83,7 +94,7 @@
                 </h1>
 
                 <!-- Action Buttons -->
-                <div class="flex flex-wrap items-center justify-center md:justify-start gap-4 pt-2">
+                <div class="flex flex-wrap items-center justify-center md:justify-start gap-4 pt-2 pointer-events-auto">
                     <button data-view-target="student-kiosk" class="btn-ultron px-8 py-4 font-mono font-medium flex items-center gap-3 text-sm uppercase tracking-[0.04em]">
                         <i data-lucide="graduation-cap" class="w-5 h-5"></i>
                         <span>Launch Student Portal</span>
@@ -95,11 +106,6 @@
                     </button>
                 </div>
 
-            </div>
-
-            <!-- RIGHT: NOAH 3D Swarm Particle Simulation Core (interactive) -->
-            <div id="ultronCanvasContainer" class="relative z-0 w-full md:w-1/2 min-h-[50vh] md:min-h-0 flex-shrink-0">
-                <canvas id="ultronCanvas" class="w-full h-full block"></canvas>
             </div>
 
         </section>
