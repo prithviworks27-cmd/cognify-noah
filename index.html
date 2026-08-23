@@ -142,7 +142,7 @@
                 </div>
 
                 <!-- Past Test History -->
-                <div class="glass-card p-6 rounded-xl border border-[#1A1A1A]">
+                <div class="glass-card p-6 rounded-xl">
                     <h3 class="text-lg font-bold text-[#F2F2F0] mb-4 flex items-center gap-2">
                         <i data-lucide="history" class="w-5 h-5 text-[#4A4A49]"></i>
                         <span>Your Past Oral Test Results</span>
@@ -154,7 +154,7 @@
 
             <!-- Step 4: End-of-Test Result Dashboard -->
             <div id="examResultStep" class="hidden">
-                <div class="glass-card p-8 rounded-xl border border-[#1A1A1A] max-w-3xl mx-auto">
+                <div class="glass-card p-8 rounded-xl max-w-3xl mx-auto">
                     <div class="text-center mb-8 border-b border-[#1A1A1A] pb-6">
                         <div class="w-16 h-16 rounded-xl bg-[#00C758]/10 border border-[#00C758]/30 flex items-center justify-center text-[#00C758] mx-auto mb-4">
                             <i data-lucide="award" class="w-8 h-8"></i>
@@ -229,26 +229,26 @@
 
             <!-- KPI Cards -->
             <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-                <div class="glass-card p-6 rounded-xl border border-[#1A1A1A]">
-                    <span class="text-xs font-mono text-[#4A4A49] block mb-1">Total Oral Tests Taken</span>
+                <div class="glass-card p-8 rounded-xl">
+                    <span class="text-xs font-mono text-[#4A4A49] block mb-2 uppercase tracking-[0.08em]">Total Oral Tests Taken</span>
                     <span id="kpiTotalTests" class="text-3xl font-black text-[#F2F2F0]">0</span>
                 </div>
-                <div class="glass-card p-6 rounded-xl border border-[#1A1A1A]">
-                    <span class="text-xs font-mono text-[#4A4A49] block mb-1">Class Average Score</span>
+                <div class="glass-card p-8 rounded-xl">
+                    <span class="text-xs font-mono text-[#4A4A49] block mb-2 uppercase tracking-[0.08em]">Class Average Score</span>
                     <span id="kpiAvgScore" class="text-3xl font-black text-[#00C758]">0%</span>
                 </div>
-                <div class="glass-card p-6 rounded-xl border border-[#1A1A1A]">
-                    <span class="text-xs font-mono text-[#4A4A49] block mb-1">Flagged Audio / Needs Review</span>
+                <div class="glass-card p-8 rounded-xl">
+                    <span class="text-xs font-mono text-[#4A4A49] block mb-2 uppercase tracking-[0.08em]">Flagged Audio / Needs Review</span>
                     <span id="kpiFlaggedStudents" class="text-3xl font-black text-[#4A4A49]">0</span>
                 </div>
-                <div class="glass-card p-6 rounded-xl border border-[#1A1A1A]">
-                    <span class="text-xs font-mono text-[#4A4A49] block mb-1">Active Test Papers</span>
+                <div class="glass-card p-8 rounded-xl">
+                    <span class="text-xs font-mono text-[#4A4A49] block mb-2 uppercase tracking-[0.08em]">Active Test Papers</span>
                     <span id="kpiActivePapers" class="text-3xl font-black text-[#4A4A49]">0</span>
                 </div>
             </div>
 
             <!-- PDF & PHOTO TEST PAPER UPLOADER (ADMIN) -->
-            <div class="glass-card p-8 rounded-xl border border-[#1A1A1A] mb-12">
+            <div class="glass-card p-8 rounded-xl mb-12">
                 <h3 class="text-xl font-bold text-[#F2F2F0] mb-2 flex items-center gap-2">
                     <i data-lucide="file-up" class="w-5 h-5 text-[#4A4A49]"></i>
                     <span>Upload Test Paper (PDF Document or Image/Photo)</span>
@@ -318,7 +318,7 @@
             </div>
 
             <!-- Manage Test Papers (Add via uploader above / Remove here) -->
-            <div class="glass-card p-6 rounded-xl border border-[#1A1A1A] mb-12">
+            <div class="glass-card p-6 rounded-xl mb-12">
                 <h3 class="text-xl font-bold text-[#F2F2F0] mb-6">Manage Test Papers</h3>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
@@ -338,7 +338,7 @@
             </div>
 
             <!-- Student Performance Table -->
-            <div class="glass-card p-6 rounded-xl border border-[#1A1A1A]">
+            <div class="glass-card p-6 rounded-xl">
                 <h3 class="text-xl font-bold text-[#F2F2F0] mb-6">All Student Oral Exam Submissions Log</h3>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
@@ -394,7 +394,7 @@
             </div>
 
             <!-- QUESTION ASKED DIRECTLY BENEATH NOAH -->
-            <div class="w-full max-w-3xl glass-card p-8 rounded-xl border border-[#1A1A1A] text-center relative">
+            <div class="w-full max-w-3xl glass-card p-8 rounded-xl text-center relative">
                 <span class="text-xs font-mono text-[#4A4A49] font-bold uppercase tracking-wider block mb-2">NOAH asks:</span>
                 <p id="kioskQuestionText" class="text-2xl font-bold text-[#F2F2F0] mb-6 leading-relaxed">
                     Loading question...
@@ -437,7 +437,7 @@
 
     <!-- AUTH / SIGN-IN MODAL -->
     <div id="authModal" class="hidden fixed inset-0 z-50 bg-[#090909] backdrop-blur-md flex items-center justify-center p-4">
-        <div class="glass-card p-8 rounded-xl border border-[#1A1A1A] max-w-md w-full relative">
+        <div class="glass-card p-8 rounded-xl max-w-md w-full relative">
             <button id="closeAuthModalBtn" class="absolute top-4 right-4 text-[#4A4A49] hover:text-[#F2F2F0]">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
@@ -553,7 +553,7 @@
         </button>
 
         <!-- Expandable Chatbot Window -->
-        <div id="noahWidgetWindow" class="hidden fixed bottom-24 right-6 w-96 max-w-[calc(100vw-3rem)] glass-card rounded-xl border border-[#1A1A1A] overflow-hidden transform transition-all duration-300 scale-95 opacity-0">
+        <div id="noahWidgetWindow" class="hidden fixed bottom-24 right-6 w-96 max-w-[calc(100vw-3rem)] glass-card rounded-xl overflow-hidden transform transition-all duration-300 scale-95 opacity-0">
             <div class="bg-[#090909] p-4 border-b border-[#1A1A1A] flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <div class="w-8 h-8 rounded-lg bg-[#1A1A1A] border border-[#1A1A1A] flex items-center justify-center text-[#4A4A49]">
