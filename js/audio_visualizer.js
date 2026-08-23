@@ -155,12 +155,23 @@ class UltronParticleCore {
         this.DUST_START = Math.floor(this.COUNT * 0.82);
         this.dustBase = [];
         this.dustSeed = [];
+        // Mist is kept out of the sphere's own volume so NOAH reads as one
+        // clean, independent shape rather than blending into the ambient
+        // particles around it — the two systems share a mesh for efficiency
+        // but never actually occupy the same space.
+        const sphereExclusionRadius = this.params.targetScale * 1.4;
         for (let i = this.DUST_START; i < this.COUNT; i++) {
-            this.dustBase.push(new THREE.Vector3(
-                (Math.random() - 0.5) * 300,
-                (Math.random() - 0.5) * 140,
-                (Math.random() - 0.5) * 120
-            ));
+            let bx, by, bz, tries = 0;
+            do {
+                bx = (Math.random() - 0.5) * 300;
+                by = (Math.random() - 0.5) * 140;
+                bz = (Math.random() - 0.5) * 120;
+                tries++;
+            } while (
+                tries < 20 &&
+                Math.hypot(bx - this.centerOffsetX, by, bz) < sphereExclusionRadius
+            );
+            this.dustBase.push(new THREE.Vector3(bx, by, bz));
             this.dustSeed.push(Math.random() * Math.PI * 2);
         }
 
