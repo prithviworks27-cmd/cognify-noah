@@ -90,6 +90,12 @@ class UltronParticleCore {
         });
         this.renderer.setSize(width, height);
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        // UnrealBloomPass composites an opaque result regardless of the
+        // renderer's alpha:true, so the canvas rectangle was rendering pure
+        // black — a visibly different shade from the page's #080808, which
+        // is exactly what read as a "container" edge. Matching the clear
+        // color removes that seam entirely.
+        this.renderer.setClearColor(0x080808, 1);
 
         // 3. OrbitControls
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
