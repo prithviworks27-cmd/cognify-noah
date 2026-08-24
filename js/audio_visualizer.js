@@ -278,23 +278,35 @@ class UltronParticleCore {
                 // Dim, quiet grey — background texture, not the main figure.
                 this.color.setHSL(0.06, 0.04, 0.32 + 0.08 * Math.sin(time * 0.5 + seed));
             } else {
-                const u = i / this.DUST_START;
-                const y = 1 - 2 * u;
-                const r = Math.sqrt(Math.max(0, 1 - y * y));
-                const x = r * Math.cos(theta);
-                const z = r * Math.sin(theta);
+                // NOAH's neural core — a Fibonacci-lattice shell that breathes,
+                // ripples with a signal wave, and turns as a rigid body, ported
+                // from the brain particle swarm export (brainn.html) onto the
+                // same reactive scale/chaos/rotation params driving the rest of
+                // this visualizer.
+                const u = (i + 0.5) / this.DUST_START;
+                const phi = Math.acos(1 - 2 * u);
 
-                const wave = Math.sin(theta * 9 + time * 3 + y * 12) * this.params.chaos;
-                const outer = currentScale * (1 + wave * 0.045);
+                const activity = this.params.chaos;
+                const complexity = 2.0;
+                const turbulence = 1.52;
 
-                let px = x * outer;
-                let py = y * outer;
-                let pz = z * outer;
+                const shellRadius = currentScale * (0.65 + 0.35 * Math.sin(theta * complexity + time * activity));
 
-                const core = Math.exp(-u * 18);
-                px *= 1 - core * 0.35;
-                py *= 1 - core * 0.35;
-                pz *= 1 - core * 0.35;
+                const x0 = shellRadius * Math.sin(phi) * Math.cos(theta);
+                const y0 = shellRadius * Math.cos(phi);
+                const z0 = shellRadius * Math.sin(phi) * Math.sin(theta);
+
+                const signal = Math.sin(theta * complexity - time * activity * 6.0) *
+                    Math.cos(phi * 5.0 + time * 2.0);
+                const wave = 1.0 + 0.12 * signal;
+
+                let px = x0 * wave;
+                let py = y0 * wave;
+                let pz = z0 * wave;
+
+                px += currentScale * 0.05 * Math.sin(py * 0.08 + time * turbulence);
+                py += currentScale * 0.03 * Math.cos(pz * 0.08 - time * turbulence);
+                pz += currentScale * 0.05 * Math.sin(px * 0.08 + time * turbulence);
 
                 const ca = Math.cos(t * 0.7);
                 const sa = Math.sin(t * 0.7);
@@ -304,21 +316,18 @@ class UltronParticleCore {
 
                 this.target.set(rx + this.centerOffsetX, py, rz);
 
-                // Color Palette Modulation — monochrome white/grey at rest, the
-                // single orange accent (#FF6901, hue ~0.065) only asserts itself
-                // while NOAH is actively speaking, matching the "orange used
-                // sparingly for critical moments" rule from the design system.
-                const pulse = 0.5 + 0.5 * Math.sin(time * 4 + theta * 3);
-                if (this.mode === 'listening') {
-                    const light = 0.55 + pulse * 0.2;
-                    this.color.setHSL(0.07, 0.2, light);
-                } else if (this.mode === 'speaking') {
-                    const light = 0.45 + pulse * 0.25;
-                    this.color.setHSL(0.065, 0.85, light);
-                } else {
-                    const light = 0.55 + pulse * 0.2;
-                    this.color.setHSL(0.06, 0.06, light);
-                }
+                // Firing-based color, straight from the brain export: each
+                // particle's own signal phase drives a blue-to-warm hue swing
+                // rather than one flat tint, which is what actually reads as
+                // a "living neural network" instead of a plain grey orb. Mode
+                // only nudges the energy (brightness) of that same gradient.
+                const firing = 0.5 + 0.5 * Math.sin(theta * complexity - time * activity * 10.0);
+                const hue = 0.62 - 0.52 * firing;
+                const baseLight = 0.18 + 0.72 * firing;
+                let light = baseLight;
+                if (this.mode === 'listening') light += 0.08;
+                else if (this.mode === 'speaking') light += 0.16;
+                this.color.setHSL(hue, 0.9, Math.min(1, light));
             }
 
             this.positions[i].lerp(this.target, 0.1);
