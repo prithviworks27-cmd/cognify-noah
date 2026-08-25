@@ -1,0 +1,25 @@
+{
+  "name": "cognify-noah",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build:css": "tailwindcss -i ./tailwind.src.css -o ./tailwind.css --minify",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/prithviworks27-cmd/cognify-noah.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/prithviworks27-cmd/cognify-noah/issues"
+  },
+  "homepage": "https://github.com/prithviworks27-cmd/cognify-noah#readme",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "tailwindcss": "^4.3.3"
+  }
+}

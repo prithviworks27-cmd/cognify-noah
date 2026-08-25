@@ -3,7 +3,9 @@
    with a single orange accent, mono-first typography, hard 1px rails instead
    of soft shadows/blur. */
 
-@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Darker+Grotesque:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+/* Font loading moved to a preconnected <link> in index.html's <head> —
+   an @import here would serialize the font fetch behind this file's own
+   fetch instead of letting the browser discover and fetch it in parallel. */
 
 :root {
     /* Berkeley Mono isn't freely distributable — JetBrains Mono stands in for

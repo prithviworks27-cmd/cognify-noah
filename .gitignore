@@ -6,3 +6,4 @@ backend/app/routers/__pycache__/
 *.pyc
 backend/noah.db
 backend/.env
+node_modules/

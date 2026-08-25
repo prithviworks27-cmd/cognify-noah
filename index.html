@@ -4,14 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NOAH - AI Oral Examiner</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Fonts: preconnected + linked directly instead of styles.css's old
+         @import, which serialized the font fetch behind the CSS fetch. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Darker+Grotesque:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+
+    <!-- Tailwind CSS, built locally (see tailwind.src.css / `npm run build:css`)
+         instead of the cdn.tailwindcss.com Play CDN, which ships its full
+         runtime and JIT-compiles in-browser on every load. -->
+    <link rel="stylesheet" href="tailwind.css">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- PDF.js CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <!-- Tesseract OCR CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <!-- PDF.js / Tesseract OCR are admin-upload-only tools, not needed by
+         every visitor who just hits the landing hero — loaded lazily by
+         document_parser.js on first actual file upload instead of here. -->
     <!-- Motion (animation library) — exposes window.Motion for use in classic scripts -->
     <script src="https://cdn.jsdelivr.net/npm/motion@13.1.1/dist/motion.js"></script>
     <!-- Custom Ultron Theme Styles -->

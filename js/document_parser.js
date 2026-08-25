@@ -5,24 +5,54 @@
 
 class DocumentParser {
     constructor() {
-        this.initPdfJs();
+        this._pdfJsPromise = null;
+        this._tesseractPromise = null;
     }
 
-    initPdfJs() {
-        if (window.pdfjsLib) {
-            window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    loadScript(src) {
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = src;
+            script.onload = resolve;
+            script.onerror = () => reject(new Error(`Failed to load ${src}`));
+            document.head.appendChild(script);
+        });
+    }
+
+    // PDF.js and Tesseract are admin-upload-only tools (Tesseract in
+    // particular ships a large wasm payload), so they're fetched on first
+    // actual use here instead of unconditionally in index.html's <head>,
+    // where every landing-page visitor would pay for them regardless of
+    // whether they ever touch the admin uploader.
+    ensurePdfJs() {
+        if (window.pdfjsLib) return Promise.resolve();
+        if (!this._pdfJsPromise) {
+            this._pdfJsPromise = this.loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js').then(() => {
+                window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            });
         }
+        return this._pdfJsPromise;
+    }
+
+    ensureTesseract() {
+        if (window.Tesseract) return Promise.resolve();
+        if (!this._tesseractPromise) {
+            this._tesseractPromise = this.loadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js');
+        }
+        return this._tesseractPromise;
     }
 
     async parseFile(file) {
         const fileType = file.type || '';
         const fileName = file.name || '';
-        
+
         let extractedText = '';
 
         if (fileType.includes('pdf') || fileName.endsWith('.pdf')) {
+            await this.ensurePdfJs();
             extractedText = await this.extractTextFromPdf(file);
         } else if (fileType.includes('image') || fileName.match(/\.(png|jpe?g|webp|bmp)$/i)) {
+            await this.ensureTesseract();
             extractedText = await this.extractTextFromImage(file);
         } else {
             // Text or fallback file

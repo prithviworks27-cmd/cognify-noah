@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+/* Explicit sources so the build picks up classes even if they only ever
+   appear inside JS template strings (admin tables, exam kiosk, widget) —
+   Tailwind's default auto-detection should find these too, but being
+   explicit means a future file move can't silently drop coverage. */
+@source "./index.html";
+@source "./js/**/*.js";
