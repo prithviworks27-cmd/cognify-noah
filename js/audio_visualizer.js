@@ -330,18 +330,24 @@ class UltronParticleCore {
 
                 this.target.set(rx + this.centerOffsetX, py, rz);
 
-                // Firing-based color, straight from the brain export: each
-                // particle's own signal phase drives a blue-to-warm hue swing
-                // rather than one flat tint, which is what actually reads as
-                // a "living neural network" instead of a plain grey orb. Mode
-                // only nudges the energy (brightness) of that same gradient.
-                const firing = 0.5 + 0.5 * Math.sin(theta * complexity - time * activity * 10.0);
-                const hue = 0.62 - 0.52 * firing;
-                const baseLight = 0.18 + 0.72 * firing;
-                let light = baseLight;
-                if (this.mode === 'listening') light += 0.08;
-                else if (this.mode === 'speaking') light += 0.16;
-                this.color.setHSL(hue, 0.9, Math.min(1, light));
+                // Color Palette Modulation — monochrome white/grey at rest, the
+                // single orange accent (#FF6901, hue ~0.065) only asserts itself
+                // while NOAH is actively speaking, matching the "orange used
+                // sparingly for critical moments" rule from the design system.
+                // (A wide firing-driven hue swing was tried here — swinging
+                // blue-to-warm at high saturation — but combined with bloom it
+                // read as a muddy multi-color haze rather than a clean glow.)
+                const pulse = 0.5 + 0.5 * Math.sin(time * 4 + theta * 3);
+                if (this.mode === 'listening') {
+                    const light = 0.55 + pulse * 0.2;
+                    this.color.setHSL(0.07, 0.2, light);
+                } else if (this.mode === 'speaking') {
+                    const light = 0.45 + pulse * 0.25;
+                    this.color.setHSL(0.065, 0.85, light);
+                } else {
+                    const light = 0.55 + pulse * 0.2;
+                    this.color.setHSL(0.06, 0.06, light);
+                }
             }
 
             this.positions[i].lerp(this.target, 0.1);
