@@ -34,6 +34,7 @@ class AppController {
         await window.authManager.ready;
 
         this.bindNavigationEvents();
+        this.bindMobileNavToggle();
         this.bindAuthEvents();
         this.bindWidgetEvents();
         this.bindExamEvents();
@@ -153,6 +154,29 @@ class AppController {
                 } else {
                     this.switchView(target);
                 }
+            });
+        });
+    }
+
+    bindMobileNavToggle() {
+        const toggleBtn = document.getElementById('mobileNavToggleBtn');
+        const menu = document.getElementById('mobileNavMenu');
+        if (!toggleBtn || !menu) return;
+
+        toggleBtn.addEventListener('click', () => {
+            const isOpen = !menu.classList.contains('hidden');
+            menu.classList.toggle('hidden', isOpen);
+            toggleBtn.setAttribute('aria-expanded', String(!isOpen));
+        });
+
+        // Each mobile item already gets its nav behavior from the
+        // [data-view-target] listener bound in bindNavigationEvents() above;
+        // this just closes the menu afterward so it doesn't stay open across
+        // a view switch.
+        menu.querySelectorAll('[data-view-target]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                menu.classList.add('hidden');
+                toggleBtn.setAttribute('aria-expanded', 'false');
             });
         });
     }

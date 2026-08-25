@@ -18,6 +18,13 @@ class UltronParticleCore {
         this.COUNT = 16000;
         this.SPEED_MULT = 1.0;
 
+        // prefers-reduced-motion: freezes the idle wave/breathing/spin and the
+        // cursor-repulsion physics (both continuous, vestibular-trigger-prone
+        // motion) while still letting mode changes (idle/listening/speaking)
+        // settle into a new static shape, so the swarm keeps signaling NOAH's
+        // state without the ceaseless ambient motion.
+        this.reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
         // State parameters reactive to NOAH audio & voice states
         this.params = {
             scale: 48,
@@ -219,6 +226,11 @@ class UltronParticleCore {
 
     // Trigger Hyper-Drive Particle Swarm Expansion on Login / Portal Launch
     triggerHyperDriveExpansion(onComplete) {
+        if (this.reducedMotion) {
+            this.setMode('idle');
+            if (onComplete) onComplete();
+            return;
+        }
         this.params.targetScale = 90;
         this.params.targetChaos = 2.2;
         this.params.targetRotation = 3.2;
@@ -234,7 +246,7 @@ class UltronParticleCore {
         requestAnimationFrame(() => this.animate());
 
         const delta = this.clock.getDelta();
-        const time = this.clock.getElapsedTime() * this.SPEED_MULT;
+        const time = this.reducedMotion ? 0 : this.clock.getElapsedTime() * this.SPEED_MULT;
 
         // Smooth parameter interpolation
         this.params.scale += (this.params.targetScale - this.params.scale) * 0.06;
@@ -252,7 +264,9 @@ class UltronParticleCore {
         this.controls.update();
 
         // Cast the cursor ray once per frame (not per particle) using the latest camera.
-        if (this.mouseActive) {
+        // Skipped under reduced motion — cursor repulsion is exactly the kind
+        // of magnetic-physics interaction that must collapse to static.
+        if (this.mouseActive && !this.reducedMotion) {
             this.raycaster.setFromCamera(this.mouse, this.camera);
         }
 
@@ -339,7 +353,7 @@ class UltronParticleCore {
             let py2 = this.positions[i].y;
             let pz2 = this.positions[i].z;
 
-            if (this.mouseActive) {
+            if (this.mouseActive && !this.reducedMotion) {
                 this.raycaster.ray.closestPointToPoint(this.positions[i], this._closestPoint);
                 this._pushVec.subVectors(this.positions[i], this._closestPoint);
                 const dist = this._pushVec.length();
