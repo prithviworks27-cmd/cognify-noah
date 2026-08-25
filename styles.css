@@ -86,6 +86,12 @@ code, .font-mono {
     animation: pulseGlow 2s infinite ease-in-out;
 }
 
+@media (prefers-reduced-motion: reduce) {
+    .animate-pulse-glow {
+        animation: none;
+    }
+}
+
 @keyframes floatAnim {
     0%, 100% { transform: translateY(0px); }
     50% { transform: translateY(-8px); }
