@@ -585,7 +585,6 @@ class AppController {
             if (gradePapers.length === 0) {
                 studentPapersList.innerHTML = `
                     <div class="p-8 rounded-xl bg-[var(--surface-sunken)] border border-dashed border-[var(--border)] text-center col-span-full">
-                        <i data-lucide="file-question" class="w-12 h-12 text-[var(--muted)] mx-auto mb-3"></i>
                         <h4 class="text-lg font-bold text-[var(--fg)] mb-1">No Active Papers Found for ${userGrade}</h4>
                         <p class="text-xs text-[var(--muted)]">Log in as Admin to upload a PDF or Photo test paper for ${userGrade}.</p>
                     </div>
@@ -600,8 +599,7 @@ class AppController {
                             </div>
                             <h4 class="text-xl font-bold text-[var(--fg)] mb-2">${paper.title}</h4>
                         </div>
-                        <button onclick="app.launchFullKioskExam('${paper.id}')" class="mt-6 w-full btn-ultron py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2">
-                            <i data-lucide="play" class="w-4 h-4 fill-current"></i>
+                        <button onclick="app.launchFullKioskExam('${paper.id}')" class="mt-6 w-full btn-ultron py-3 rounded-xl font-bold text-sm">
                             <span>Start Full-Screen Exam</span>
                         </button>
                     </div>
