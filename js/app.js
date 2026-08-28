@@ -163,6 +163,11 @@ class AppController {
         const menu = document.getElementById('mobileNavMenu');
         if (!toggleBtn || !menu) return;
 
+        const closeMenu = () => {
+            menu.classList.add('hidden');
+            toggleBtn.setAttribute('aria-expanded', 'false');
+        };
+
         toggleBtn.addEventListener('click', () => {
             const isOpen = !menu.classList.contains('hidden');
             menu.classList.toggle('hidden', isOpen);
@@ -174,10 +179,24 @@ class AppController {
         // this just closes the menu afterward so it doesn't stay open across
         // a view switch.
         menu.querySelectorAll('[data-view-target]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                menu.classList.add('hidden');
-                toggleBtn.setAttribute('aria-expanded', 'false');
-            });
+            btn.addEventListener('click', closeMenu);
+        });
+
+        // Escape closes the menu and returns focus to the toggle button
+        // (a keyboard user who opened it via Enter/Space shouldn't lose
+        // their place in the page).
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !menu.classList.contains('hidden')) {
+                closeMenu();
+                toggleBtn.focus();
+            }
+        });
+
+        // Clicking anywhere outside the menu/toggle closes it, matching the
+        // disclosure pattern users expect from a mobile nav.
+        document.addEventListener('click', (e) => {
+            if (menu.classList.contains('hidden')) return;
+            if (!menu.contains(e.target) && !toggleBtn.contains(e.target)) closeMenu();
         });
     }
 
@@ -190,16 +209,16 @@ class AppController {
         if (userBadge) {
             if (window.authManager.isAdmin()) {
                 userBadge.innerHTML = `
-                    <span class="w-2 h-2 rounded-full bg-[#4A4A49]"></span>
-                    <span class="font-bold text-[#4A4A49]">Admin Mode</span>
+                    <span class="w-2 h-2 rounded-full bg-[var(--muted)]"></span>
+                    <span class="font-bold text-[var(--muted)]">Admin Mode</span>
                 `;
-                userBadge.className = "flex items-center gap-2 px-3 py-1 rounded-full bg-[#1A1A1A] border border-[#1A1A1A] text-xs font-mono";
+                userBadge.className = "flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--border)] border border-[var(--border)] text-xs font-mono";
             } else {
                 userBadge.innerHTML = `
-                    <span class="w-2 h-2 rounded-full bg-[#4A4A49]"></span>
+                    <span class="w-2 h-2 rounded-full bg-[var(--muted)]"></span>
                     <span>Student: <strong>${currentUser.studentName}</strong> (${currentUser.gradeLevel})</span>
                 `;
-                userBadge.className = "flex items-center gap-2 px-3 py-1 rounded-full bg-[#1A1A1A] border border-[#1A1A1A] text-xs text-[#4A4A49] font-mono";
+                userBadge.className = "flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--border)] border border-[var(--border)] text-xs text-[var(--muted)] font-mono";
             }
         }
 
@@ -225,10 +244,24 @@ class AppController {
         const showStudentLoginBtn = document.getElementById('showStudentLoginBtn');
 
         if (closeAuthModal) {
-            closeAuthModal.addEventListener('click', () => {
-                authModal.classList.add('hidden');
-            });
+            closeAuthModal.addEventListener('click', () => this.closeAuthModal());
         }
+
+        // Clicking the backdrop (not the panel itself) closes the modal.
+        authModal.addEventListener('click', (e) => {
+            if (e.target === authModal) this.closeAuthModal();
+        });
+
+        // Escape closes the modal; Tab is trapped inside the panel so focus
+        // can't silently leave a fixed, screen-covering overlay.
+        document.addEventListener('keydown', (e) => {
+            if (authModal.classList.contains('hidden')) return;
+            if (e.key === 'Escape') {
+                this.closeAuthModal();
+            } else if (e.key === 'Tab') {
+                this.trapFocus(e, document.getElementById('authModalPanel'));
+            }
+        });
 
         if (showStudentSignupBtn) {
             showStudentSignupBtn.addEventListener('click', () => this.showAuthForm('student-signup'));
@@ -305,17 +338,30 @@ class AppController {
         this.switchView('landing');
     }
 
-    // Shows exactly one of the three auth forms, hiding the other two.
+    // Shows exactly one of the three auth forms, hiding the other two, and
+    // points the dialog's accessible name at that form's own heading so
+    // screen readers announce "Student Log In" / "Create Student Account" /
+    // "Institute Admin Access" instead of a stale or blank name.
     showAuthForm(mode) {
         document.getElementById('studentLoginForm').classList.toggle('hidden', mode !== 'student-login');
         document.getElementById('studentSignupForm').classList.toggle('hidden', mode !== 'student-signup');
         document.getElementById('adminLoginForm').classList.toggle('hidden', mode !== 'admin');
+
+        const headingIds = { 'student-login': 'authModalHeadingLogin', 'student-signup': 'authModalHeadingSignup', 'admin': 'authModalHeadingAdmin' };
+        const panel = document.getElementById('authModalPanel');
+        if (panel) panel.setAttribute('aria-labelledby', headingIds[mode]);
+
+        // Move focus to the first field of the now-visible form so keyboard/
+        // screen reader users land somewhere useful instead of on a hidden form.
+        const firstField = document.querySelector(`#${mode === 'admin' ? 'adminLoginForm' : mode === 'student-signup' ? 'studentSignupForm' : 'studentLoginForm'} input`);
+        if (firstField) firstField.focus();
     }
 
     openAuthModal(defaultMode = 'student') {
         const authModal = document.getElementById('authModal');
         const toggleAuthModeBtn = document.getElementById('toggleAuthModeBtn');
 
+        this.lastFocusedBeforeModal = document.activeElement;
         authModal.classList.remove('hidden');
         if (defaultMode === 'admin') {
             this.showAuthForm('admin');
@@ -323,6 +369,34 @@ class AppController {
         } else {
             this.showAuthForm('student-login');
             toggleAuthModeBtn.innerText = "Need Admin Access? Sign in as Admin";
+        }
+    }
+
+    closeAuthModal() {
+        document.getElementById('authModal').classList.add('hidden');
+        // Return focus to whatever triggered the modal (e.g. the nav button)
+        // instead of leaving it on a now-hidden close button.
+        if (this.lastFocusedBeforeModal && document.body.contains(this.lastFocusedBeforeModal)) {
+            this.lastFocusedBeforeModal.focus();
+        }
+    }
+
+    // Keeps Tab/Shift+Tab cycling within `container` while a modal is open,
+    // since the container sits inside a fixed full-screen overlay that
+    // otherwise lets focus escape into content hidden behind it.
+    trapFocus(e, container) {
+        const focusable = container.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        const visible = Array.from(focusable).filter(el => el.offsetParent !== null);
+        if (visible.length === 0) return;
+        const first = visible[0];
+        const last = visible[visible.length - 1];
+
+        if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
         }
     }
 
@@ -338,16 +412,16 @@ class AppController {
 
         dropZone.addEventListener('dragover', (e) => {
             e.preventDefault();
-            dropZone.classList.add('border-[#1A1A1A]', 'bg-[#1A1A1A]/50');
+            dropZone.classList.add('border-[var(--border)]', 'bg-[var(--border)]/50');
         });
 
         dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('border-[#1A1A1A]', 'bg-[#1A1A1A]/50');
+            dropZone.classList.remove('border-[var(--border)]', 'bg-[var(--border)]/50');
         });
 
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
-            dropZone.classList.remove('border-[#1A1A1A]', 'bg-[#1A1A1A]/50');
+            dropZone.classList.remove('border-[var(--border)]', 'bg-[var(--border)]/50');
             if (e.dataTransfer.files && e.dataTransfer.files[0]) {
                 this.handleFileSelected(e.dataTransfer.files[0]);
             }
@@ -411,14 +485,14 @@ class AppController {
             
             const qList = document.getElementById('extractedQuestionsList');
             qList.innerHTML = parsedData.questions.map((q, idx) => `
-                <div class="p-4 rounded-xl bg-[#090909] border border-[#1A1A1A] space-y-2">
+                <div class="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] space-y-2">
                     <div class="flex items-center justify-between text-xs font-mono">
-                        <span class="text-[#4A4A49] font-bold">NOAH Question ${idx + 1}:</span>
-                        <span class="px-2 py-0.5 rounded bg-[#0d0d0d] text-[#4A4A49] font-mono text-[10px]">Topic: ${q.topicTag}</span>
+                        <span class="text-[var(--muted)] font-bold">NOAH Question ${idx + 1}:</span>
+                        <span class="px-2 py-0.5 rounded bg-[var(--surface-sunken)] text-[var(--muted)] font-mono text-[10px]">Topic: ${q.topicTag}</span>
                     </div>
-                    <p class="text-sm text-[#F2F2F0] font-medium">${q.text}</p>
-                    <div class="text-xs text-[#4A4A49] font-mono">
-                        <span>Extracted Keywords: </span><span class="text-[#F2F2F0] font-bold">${q.keywords.join(', ')}</span>
+                    <p class="text-sm text-[var(--fg)] font-medium">${q.text}</p>
+                    <div class="text-xs text-[var(--muted)] font-mono">
+                        <span>Extracted Keywords: </span><span class="text-[var(--fg)] font-bold">${q.keywords.join(', ')}</span>
                     </div>
                 </div>
             `).join('');
@@ -436,31 +510,41 @@ class AppController {
         const widgetWindow = document.getElementById('noahWidgetWindow');
         const closeBtn = document.getElementById('widgetCloseBtn');
 
+        const closeWidget = () => {
+            this.widgetOpen = false;
+            widgetWindow.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => widgetWindow.classList.add('hidden'), 200);
+            if (window.voiceEngine) window.voiceEngine.stopSpeaking();
+            if (toggleBtn) {
+                toggleBtn.setAttribute('aria-expanded', 'false');
+                toggleBtn.focus();
+            }
+        };
+
         if (toggleBtn) {
             toggleBtn.addEventListener('click', () => {
                 this.widgetOpen = !this.widgetOpen;
                 if (this.widgetOpen) {
                     widgetWindow.classList.remove('hidden', 'scale-95', 'opacity-0');
                     widgetWindow.classList.add('scale-100', 'opacity-100');
+                    toggleBtn.setAttribute('aria-expanded', 'true');
+                    if (closeBtn) closeBtn.focus();
                     if (window.voiceEngine) {
                         window.voiceEngine.speak("Greetings. I am NOAH. Select your paper to begin your examination.");
                     }
                 } else {
-                    widgetWindow.classList.add('scale-95', 'opacity-0');
-                    setTimeout(() => widgetWindow.classList.add('hidden'), 200);
-                    if (window.voiceEngine) window.voiceEngine.stopSpeaking();
+                    closeWidget();
                 }
             });
         }
 
         if (closeBtn) {
-            closeBtn.addEventListener('click', () => {
-                this.widgetOpen = false;
-                widgetWindow.classList.add('scale-95', 'opacity-0');
-                setTimeout(() => widgetWindow.classList.add('hidden'), 200);
-                if (window.voiceEngine) window.voiceEngine.stopSpeaking();
-            });
+            closeBtn.addEventListener('click', closeWidget);
         }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.widgetOpen) closeWidget();
+        });
     }
 
     // --- Subject & Paper Rendering for Logged-In Student ---
@@ -480,21 +564,21 @@ class AppController {
         if (studentPapersList) {
             if (gradePapers.length === 0) {
                 studentPapersList.innerHTML = `
-                    <div class="p-8 rounded-xl bg-[#0d0d0d] border border-dashed border-[#1A1A1A] text-center col-span-full">
-                        <i data-lucide="file-question" class="w-12 h-12 text-[#4A4A49] mx-auto mb-3"></i>
-                        <h4 class="text-lg font-bold text-[#F2F2F0] mb-1">No Active Papers Found for ${userGrade}</h4>
-                        <p class="text-xs text-[#4A4A49]">Log in as Admin to upload a PDF or Photo test paper for ${userGrade}.</p>
+                    <div class="p-8 rounded-xl bg-[var(--surface-sunken)] border border-dashed border-[var(--border)] text-center col-span-full">
+                        <i data-lucide="file-question" class="w-12 h-12 text-[var(--muted)] mx-auto mb-3"></i>
+                        <h4 class="text-lg font-bold text-[var(--fg)] mb-1">No Active Papers Found for ${userGrade}</h4>
+                        <p class="text-xs text-[var(--muted)]">Log in as Admin to upload a PDF or Photo test paper for ${userGrade}.</p>
                     </div>
                 `;
             } else {
                 studentPapersList.innerHTML = gradePapers.map(paper => `
-                    <div class="glass-card p-6 rounded-xl border border-[#1A1A1A] hover:border-[#1A1A1A] transition duration-300 flex flex-col justify-between">
+                    <div class="glass-card p-6 rounded-xl border border-[var(--border)] hover:border-[var(--border)] transition duration-300 flex flex-col justify-between">
                         <div>
                             <div class="flex items-center justify-between mb-3">
-                                <span class="text-xs px-2.5 py-1 rounded bg-[#1A1A1A] text-[#4A4A49] font-mono border border-[#1A1A1A] font-bold">${paper.gradeLevel}</span>
-                                <span class="text-xs text-[#4A4A49] font-mono">${paper.questions.length} Oral Questions</span>
+                                <span class="text-xs px-2.5 py-1 rounded bg-[var(--border)] text-[var(--muted)] font-mono border border-[var(--border)] font-bold">${paper.gradeLevel}</span>
+                                <span class="text-xs text-[var(--muted)] font-mono">${paper.questions.length} Oral Questions</span>
                             </div>
-                            <h4 class="text-xl font-bold text-[#F2F2F0] mb-2">${paper.title}</h4>
+                            <h4 class="text-xl font-bold text-[var(--fg)] mb-2">${paper.title}</h4>
                         </div>
                         <button onclick="app.launchFullKioskExam('${paper.id}')" class="mt-6 w-full btn-ultron py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2">
                             <i data-lucide="play" class="w-4 h-4 fill-current"></i>
@@ -522,17 +606,17 @@ class AppController {
 
         if (container) {
             if (results.length === 0) {
-                container.innerHTML = `<p class="text-xs text-[#4A4A49] italic">No past oral exam attempts recorded yet.</p>`;
+                container.innerHTML = `<p class="text-xs text-[var(--muted)] italic">No past oral exam attempts recorded yet.</p>`;
             } else {
                 container.innerHTML = results.map(r => `
-                    <div class="p-4 rounded-xl bg-[#090909] border border-[#1A1A1A] flex items-center justify-between">
+                    <div class="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] flex items-center justify-between">
                         <div>
-                            <h5 class="text-sm font-bold text-[#F2F2F0]">${r.testTitle}</h5>
-                            <span class="text-xs text-[#4A4A49] font-mono">${r.date}</span>
+                            <h5 class="text-sm font-bold text-[var(--fg)]">${r.testTitle}</h5>
+                            <span class="text-xs text-[var(--muted)] font-mono">${r.date}</span>
                         </div>
                         <div class="text-right">
-                            <span class="text-lg font-black ${r.score >= 60 ? 'text-[#00C758]' : 'text-[#4A4A49]'}">${r.score}%</span>
-                            <span class="block text-[10px] uppercase font-mono text-[#4A4A49]">${r.status}</span>
+                            <span class="text-lg font-black ${r.score >= 60 ? 'text-[var(--success)]' : 'text-[var(--muted)]'}">${r.score}%</span>
+                            <span class="block text-[10px] uppercase font-mono text-[var(--muted)]">${r.status}</span>
                         </div>
                     </div>
                 `).join('');
@@ -646,7 +730,7 @@ class AppController {
         const question = paper.questions[qIndex];
 
         const transcriptBox = document.getElementById('kioskTranscriptBox');
-        transcriptBox.innerHTML = `<span class="text-[#FF6901] font-bold animate-pulse">[NOAH Core] Evaluating response for conceptual completeness & full explanation...</span><br/><span class="text-[#F2F2F0]">${transcript || '[No audible input]'}</span>`;
+        transcriptBox.innerHTML = `<span class="text-[var(--accent)] font-bold animate-pulse">[NOAH Core] Evaluating response for conceptual completeness & full explanation...</span><br/><span class="text-[var(--fg)]">${transcript || '[No audible input]'}</span>`;
         
         if (window.audioVisualizer) {
             window.audioVisualizer.setMode('listening');
@@ -678,14 +762,14 @@ class AppController {
             const feedbackAlert = document.getElementById('kioskFeedbackAlert');
             feedbackAlert.classList.remove('hidden');
             feedbackAlert.className = `p-4 rounded-xl border mb-4 transition-all ${
-                gradeResult.status === 'correct' ? 'bg-[#00C758]/10 border-[#00C758]/30 text-[#00C758]' :
-                gradeResult.status === 'partially_correct' ? 'bg-[#FF6901]/10 border-[#FF6901]/30 text-[#FF6901]' :
-                'bg-[#1A1A1A] border-[#1A1A1A] text-[#4A4A49]'
+                gradeResult.status === 'correct' ? 'bg-[var(--success)]/10 border-[var(--success)]/30 text-[var(--success)]' :
+                gradeResult.status === 'partially_correct' ? 'bg-[var(--accent)]/10 border-[var(--accent)]/30 text-[var(--accent)]' :
+                'bg-[var(--border)] border-[var(--border)] text-[var(--muted)]'
             }`;
             feedbackAlert.innerHTML = `
                 <div class="font-bold flex items-center gap-2 mb-1">
                     <span>NOAH Verdict:</span>
-                    <span class="uppercase tracking-wider text-xs px-2 py-0.5 rounded font-mono ${ gradeResult.status === 'correct' ? 'bg-[#00C758]/20 text-[#00C758] border border-[#00C758]/30' : gradeResult.status === 'partially_correct' ? 'bg-[#FF6901]/20 text-[#FF6901] border border-[#FF6901]/30' : 'bg-[#4A4A49]/20 text-[#4A4A49] border border-[#1A1A1A]' }">${gradeResult.status.replace('_', ' ')} (+${gradeResult.score} pts)</span>
+                    <span class="uppercase tracking-wider text-xs px-2 py-0.5 rounded font-mono ${ gradeResult.status === 'correct' ? 'bg-[var(--success)]/20 text-[var(--success)] border border-[var(--success)]/30' : gradeResult.status === 'partially_correct' ? 'bg-[var(--accent)]/20 text-[var(--accent)] border border-[var(--accent)]/30' : 'bg-[var(--muted)]/20 text-[var(--muted)] border border-[var(--border)]' }">${gradeResult.status.replace('_', ' ')} (+${gradeResult.score} pts)</span>
                 </div>
                 <p class="text-sm">${gradeResult.feedback}</p>
             `;
@@ -779,7 +863,7 @@ class AppController {
         document.getElementById('resultScoreDisplay').innerText = `${resultRecord.score}%`;
         document.getElementById('resultStatusBadge').innerText = resultRecord.status;
         document.getElementById('resultStatusBadge').className = `px-3 py-1 rounded-full text-xs font-mono font-bold ${
-            resultRecord.status === 'Pass' ? 'bg-[#00C758]/10 text-[#00C758] border border-[#00C758]/30' : 'bg-[#1A1A1A] text-[#4A4A49] border border-[#1A1A1A]'
+            resultRecord.status === 'Pass' ? 'bg-[var(--success)]/10 text-[var(--success)] border border-[var(--success)]/30' : 'bg-[var(--border)] text-[var(--muted)] border border-[var(--border)]'
         }`;
 
         document.getElementById('resultCorrectCount').innerText = correctCount;
@@ -789,10 +873,10 @@ class AppController {
         const topicContainer = document.getElementById('resultStrugglingTopics');
         if (resultRecord.strugglingTopics.length > 0) {
             topicContainer.innerHTML = resultRecord.strugglingTopics.map(t => `
-                <span class="px-3 py-1 rounded-lg bg-[#1A1A1A] border border-[#1A1A1A] text-[#4A4A49] text-xs font-mono">${t}</span>
+                <span class="px-3 py-1 rounded-lg bg-[var(--border)] border border-[var(--border)] text-[var(--muted)] text-xs font-mono">${t}</span>
             `).join('');
         } else {
-            topicContainer.innerHTML = `<span class="text-xs text-[#00C758] font-mono">None! Exceptional mastery across all question topics.</span>`;
+            topicContainer.innerHTML = `<span class="text-xs text-[var(--success)] font-mono">None! Exceptional mastery across all question topics.</span>`;
         }
 
         document.getElementById('resultPronunciationNote').innerText = resultRecord.pronunciationNote;
@@ -861,23 +945,23 @@ class AppController {
             if (papers.length === 0) {
                 papersTbody.innerHTML = `
                     <tr>
-                        <td colspan="6" class="py-8 text-center text-[#4A4A49] italic text-sm">
+                        <td colspan="6" class="py-8 text-center text-[var(--muted)] italic text-sm">
                             No test papers yet. Upload one above to get started.
                         </td>
                     </tr>
                 `;
             } else {
                 papersTbody.innerHTML = papers.map(p => `
-                    <tr class="border-b border-[#1A1A1A] hover:bg-[#0d0d0d] transition">
-                        <td class="py-3 px-4 font-semibold text-[#F2F2F0]">${p.title}</td>
-                        <td class="py-3 px-4 text-sm text-[#F2F2F0]">${subjectsById[p.subjectId] || '—'}</td>
-                        <td class="py-3 px-4 text-xs text-[#4A4A49] font-mono">${p.gradeLevel}</td>
-                        <td class="py-3 px-4 text-xs text-[#4A4A49]">${p.questions.length}</td>
+                    <tr class="border-b border-[var(--border)] hover:bg-[var(--surface-sunken)] transition">
+                        <td class="py-3 px-4 font-semibold text-[var(--fg)]">${p.title}</td>
+                        <td class="py-3 px-4 text-sm text-[var(--fg)]">${subjectsById[p.subjectId] || '—'}</td>
+                        <td class="py-3 px-4 text-xs text-[var(--muted)] font-mono">${p.gradeLevel}</td>
+                        <td class="py-3 px-4 text-xs text-[var(--muted)]">${p.questions.length}</td>
                         <td class="py-3 px-4">
-                            <span class="px-2.5 py-1 rounded-full text-xs font-mono ${ p.active ? 'bg-[#00C758]/10 text-[#00C758] border border-[#00C758]/30' : 'bg-[#1A1A1A] text-[#4A4A49] border border-[#1A1A1A]' }">${p.active ? 'Active' : 'Inactive'}</span>
+                            <span class="px-2.5 py-1 rounded-full text-xs font-mono ${ p.active ? 'bg-[var(--success)]/10 text-[var(--success)] border border-[var(--success)]/30' : 'bg-[var(--border)] text-[var(--muted)] border border-[var(--border)]' }">${p.active ? 'Active' : 'Inactive'}</span>
                         </td>
                         <td class="py-3 px-4 text-right">
-                            <button data-delete-paper="${p.id}" class="px-3 py-1.5 rounded-lg bg-[#1A1A1A] hover:bg-[#1A1A1A] border border-[#1A1A1A] text-[#4A4A49] text-xs font-semibold transition">
+                            <button data-delete-paper="${p.id}" class="px-3 py-1.5 rounded-lg bg-[var(--border)] hover:bg-[var(--border)] border border-[var(--border)] text-[var(--muted)] text-xs font-semibold transition">
                                 Remove
                             </button>
                         </td>
@@ -891,23 +975,23 @@ class AppController {
             if (results.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="7" class="py-8 text-center text-[#4A4A49] italic text-sm">
+                        <td colspan="7" class="py-8 text-center text-[var(--muted)] italic text-sm">
                             No student oral test submissions recorded yet. Upload a PDF or Photo test paper above to start!
                         </td>
                     </tr>
                 `;
             } else {
                 tbody.innerHTML = results.map(r => `
-                    <tr class="border-b border-[#1A1A1A] hover:bg-[#0d0d0d] transition">
-                        <td class="py-3 px-4 font-semibold text-[#F2F2F0]">${r.studentName} <span class="block text-xs font-normal text-[#4A4A49]">${r.studentId} (${r.gradeLevel})</span></td>
-                        <td class="py-3 px-4 text-sm text-[#F2F2F0]">${r.testTitle}</td>
-                        <td class="py-3 px-4 text-xs text-[#4A4A49] font-mono">${r.date}</td>
-                        <td class="py-3 px-4 font-bold ${r.score >= 80 ? 'text-[#00C758]' : r.score >= 60 ? 'text-[#FF6901]' : 'text-[#4A4A49]'}">${r.score}%</td>
+                    <tr class="border-b border-[var(--border)] hover:bg-[var(--surface-sunken)] transition">
+                        <td class="py-3 px-4 font-semibold text-[var(--fg)]">${r.studentName} <span class="block text-xs font-normal text-[var(--muted)]">${r.studentId} (${r.gradeLevel})</span></td>
+                        <td class="py-3 px-4 text-sm text-[var(--fg)]">${r.testTitle}</td>
+                        <td class="py-3 px-4 text-xs text-[var(--muted)] font-mono">${r.date}</td>
+                        <td class="py-3 px-4 font-bold ${r.score >= 80 ? 'text-[var(--success)]' : r.score >= 60 ? 'text-[var(--accent)]' : 'text-[var(--muted)]'}">${r.score}%</td>
                         <td class="py-3 px-4">
-                            <span class="px-2.5 py-1 rounded-full text-xs font-mono ${ r.status === 'Pass' ? 'bg-[#00C758]/10 text-[#00C758] border border-[#00C758]/30' : 'bg-[#1A1A1A] text-[#4A4A49] border border-[#1A1A1A]' }">${r.status}</span>
+                            <span class="px-2.5 py-1 rounded-full text-xs font-mono ${ r.status === 'Pass' ? 'bg-[var(--success)]/10 text-[var(--success)] border border-[var(--success)]/30' : 'bg-[var(--border)] text-[var(--muted)] border border-[var(--border)]' }">${r.status}</span>
                         </td>
-                        <td class="py-3 px-4 text-xs text-[#4A4A49]">${r.strugglingTopics.join(', ') || 'None'}</td>
-                        <td class="py-3 px-4 text-xs ${r.pronunciationNote.includes('FLAGGED') ? 'text-[#4A4A49] font-bold' : 'text-[#4A4A49]'}">${r.pronunciationNote}</td>
+                        <td class="py-3 px-4 text-xs text-[var(--muted)]">${r.strugglingTopics.join(', ') || 'None'}</td>
+                        <td class="py-3 px-4 text-xs ${r.pronunciationNote.includes('FLAGGED') ? 'text-[var(--muted)] font-bold' : 'text-[var(--muted)]'}">${r.pronunciationNote}</td>
                     </tr>
                 `).join('');
             }

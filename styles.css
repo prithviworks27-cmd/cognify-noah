@@ -12,6 +12,9 @@
        it as the closest openly-licensed technical monospace. */
     --bg: #080808;
     --surface: #090909;
+    /* Recessed surfaces — inputs, nested panels — one shade darker than
+       --surface. Was hardcoded as #0d0d0d throughout index.html/app.js. */
+    --surface-sunken: #0d0d0d;
     --fg: #F2F2F0;
     --muted: #4A4A49;
     --border: #1A1A1A;
