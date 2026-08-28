@@ -106,6 +106,12 @@ code, .font-mono {
     animation: floatAnim 4s infinite ease-in-out;
 }
 
+@media (prefers-reduced-motion: reduce) {
+    .animate-float {
+        animation: none;
+    }
+}
+
 /* Flat, database-style rows — no radius, hard divider only. */
 .rail-row {
     border-bottom: 1px solid var(--border);

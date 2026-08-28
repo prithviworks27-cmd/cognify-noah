@@ -40,7 +40,6 @@ class AppController {
         this.bindExamEvents();
         this.bindAdminEvents();
         this.bindFileUploadEvents();
-        this.bindBackgroundVideoLoop();
 
         this.updateUserAuthHeaderUI();
         await this.renderSubjectAndPapers();
@@ -49,58 +48,65 @@ class AppController {
         if (window.lucide) window.lucide.createIcons();
     }
 
-    // --- Background Video Levitating Loop Handler ---
-    bindBackgroundVideoLoop() {
-        const bgVideo = document.getElementById('bgUltronVideo');
-        if (bgVideo) {
-            bgVideo.addEventListener('timeupdate', () => {
-                // Loop the levitating hovering sequence (0.0s to 3.8s) while on landing page before login
-                if (!this.isWarpTransition && bgVideo.currentTime >= 3.8) {
-                    bgVideo.currentTime = 0;
-                    bgVideo.play();
-                }
-            });
+    // Respects the same reduced-motion preference audioVisualizer.js already
+    // applies to the particle system, for every Motion-driven UI animation.
+    prefersReducedMotion() {
+        return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    }
+
+    // Thin wrapper around window.Motion.animate(): jumps straight to the
+    // final frame when Motion failed to load (CDN down) or the user prefers
+    // reduced motion, so every call site gets a consistent `.finished`
+    // promise to await instead of guessing a matching setTimeout duration.
+    motionAnimate(el, keyframes, options) {
+        if (!window.Motion) {
+            const finalState = {};
+            for (const key in keyframes) {
+                const val = keyframes[key];
+                finalState[key] = Array.isArray(val) ? val[val.length - 1] : val;
+            }
+            Object.assign(el.style, finalState);
+            return { finished: Promise.resolve() };
         }
+        if (this.prefersReducedMotion()) {
+            return window.Motion.animate(el, keyframes, { ...options, duration: 0 });
+        }
+        return window.Motion.animate(el, keyframes, options);
     }
 
     // --- Cinematic Login Rush Transition ---
     playCinematicLoginTransition(targetView, onComplete) {
         this.isWarpTransition = true;
-        const bgVideo = document.getElementById('bgUltronVideo');
         const heroContent = document.getElementById('landingHeroContent');
         const authModal = document.getElementById('authModal');
 
         if (authModal) authModal.classList.add('hidden');
 
-        // 1. Video jumps to 3.9s and plays forward as Ultron rushes towards the screen!
-        if (bgVideo) {
-            bgVideo.currentTime = 3.9;
-            bgVideo.play();
-        }
-
-        // 2. Expand NOAH 3D particle swarm with Unreal Bloom explosion
-        if (window.audioVisualizer) {
-            window.audioVisualizer.triggerHyperDriveExpansion();
-        }
-
-        // 3. Fade out hero text
+        // Fade + scale out the hero text while NOAH's particle swarm expands.
         if (heroContent) {
-            heroContent.classList.add('opacity-0', 'scale-110', 'pointer-events-none');
+            heroContent.style.pointerEvents = 'none';
+            this.motionAnimate(heroContent, { opacity: [1, 0], scale: [1, 1.1] }, { duration: 0.5, ease: 'easeIn' });
         }
 
-        // 4. After 1.3 seconds, transition to the respective Student/Admin view
-        setTimeout(() => {
+        // The particle expansion (bloom explosion) drives the actual timing
+        // of this sequence via its own onComplete callback, instead of a
+        // second, independently-guessed setTimeout racing against it.
+        const finishSequence = () => {
             this.switchView(targetView);
             this.isWarpTransition = false;
 
             if (heroContent) {
-                heroContent.classList.remove('opacity-0', 'scale-110', 'pointer-events-none');
-            }
-            if (bgVideo) {
-                bgVideo.currentTime = 0;
+                heroContent.style.pointerEvents = '';
+                this.motionAnimate(heroContent, { opacity: [0, 1], scale: [1.1, 1] }, { duration: 0.5, ease: 'easeOut' });
             }
             if (onComplete) onComplete();
-        }, 1300);
+        };
+
+        if (window.audioVisualizer) {
+            window.audioVisualizer.triggerHyperDriveExpansion(finishSequence);
+        } else {
+            finishSequence();
+        }
     }
 
     // --- Navigation & View Switching ---
@@ -359,6 +365,7 @@ class AppController {
 
     openAuthModal(defaultMode = 'student') {
         const authModal = document.getElementById('authModal');
+        const panel = document.getElementById('authModalPanel');
         const toggleAuthModeBtn = document.getElementById('toggleAuthModeBtn');
 
         this.lastFocusedBeforeModal = document.activeElement;
@@ -370,10 +377,21 @@ class AppController {
             this.showAuthForm('student-login');
             toggleAuthModeBtn.innerText = "Need Admin Access? Sign in as Admin";
         }
+
+        this.motionAnimate(authModal, { opacity: [0, 1] }, { duration: 0.2, ease: 'easeOut' });
+        this.motionAnimate(panel, { opacity: [0, 1], scale: [0.96, 1] }, { type: 'spring', bounce: 0.2, visualDuration: 0.3 });
     }
 
-    closeAuthModal() {
-        document.getElementById('authModal').classList.add('hidden');
+    async closeAuthModal() {
+        const authModal = document.getElementById('authModal');
+        const panel = document.getElementById('authModalPanel');
+
+        await Promise.all([
+            this.motionAnimate(authModal, { opacity: [1, 0] }, { duration: 0.15, ease: 'easeIn' }).finished,
+            this.motionAnimate(panel, { opacity: [1, 0], scale: [1, 0.96] }, { duration: 0.15, ease: 'easeIn' }).finished
+        ]);
+        authModal.classList.add('hidden');
+
         // Return focus to whatever triggered the modal (e.g. the nav button)
         // instead of leaving it on a now-hidden close button.
         if (this.lastFocusedBeforeModal && document.body.contains(this.lastFocusedBeforeModal)) {
@@ -510,28 +528,30 @@ class AppController {
         const widgetWindow = document.getElementById('noahWidgetWindow');
         const closeBtn = document.getElementById('widgetCloseBtn');
 
-        const closeWidget = () => {
+        // Animates out then hides — using the animation's own `.finished`
+        // promise instead of a setTimeout guessed to match a CSS duration,
+        // which previously cut the fade-out short by 100ms.
+        const closeWidget = async () => {
             this.widgetOpen = false;
-            widgetWindow.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => widgetWindow.classList.add('hidden'), 200);
             if (window.voiceEngine) window.voiceEngine.stopSpeaking();
-            if (toggleBtn) {
-                toggleBtn.setAttribute('aria-expanded', 'false');
-                toggleBtn.focus();
-            }
+            if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
+
+            await this.motionAnimate(widgetWindow, { opacity: [1, 0], scale: [1, 0.95] }, { type: 'spring', bounce: 0.2, visualDuration: 0.2 }).finished;
+            widgetWindow.classList.add('hidden');
+            if (toggleBtn) toggleBtn.focus();
         };
 
         if (toggleBtn) {
-            toggleBtn.addEventListener('click', () => {
+            toggleBtn.addEventListener('click', async () => {
                 this.widgetOpen = !this.widgetOpen;
                 if (this.widgetOpen) {
-                    widgetWindow.classList.remove('hidden', 'scale-95', 'opacity-0');
-                    widgetWindow.classList.add('scale-100', 'opacity-100');
+                    widgetWindow.classList.remove('hidden');
                     toggleBtn.setAttribute('aria-expanded', 'true');
-                    if (closeBtn) closeBtn.focus();
                     if (window.voiceEngine) {
                         window.voiceEngine.speak("Greetings. I am NOAH. Select your paper to begin your examination.");
                     }
+                    await this.motionAnimate(widgetWindow, { opacity: [0, 1], scale: [0.95, 1] }, { type: 'spring', bounce: 0.2, visualDuration: 0.3 }).finished;
+                    if (closeBtn) closeBtn.focus();
                 } else {
                     closeWidget();
                 }
@@ -666,8 +686,10 @@ class AppController {
 
         document.getElementById('kioskPaperTitle').innerText = paper.title;
         document.getElementById('kioskQuestionCounter').innerText = `Question ${qIndex + 1} of ${paper.questions.length}`;
-        const pct = ((qIndex + 1) / paper.questions.length) * 100;
-        document.getElementById('kioskProgressBar').style.width = `${pct}%`;
+        const pct = (qIndex + 1) / paper.questions.length;
+        // Animates via transform (compositor-only) instead of width, which
+        // would trigger layout/paint on every frame alongside the particle canvas.
+        this.motionAnimate(document.getElementById('kioskProgressBar'), { scaleX: pct }, { duration: 0.4, ease: 'easeOut' });
 
         document.getElementById('kioskQuestionText').innerText = question.text;
         document.getElementById('kioskTranscriptBox').innerText = 'Awaiting your spoken response...';

@@ -415,7 +415,7 @@
 
             <div class="flex items-center gap-4">
                 <div class="w-36 h-2 bg-[var(--surface-sunken)] rounded-full overflow-hidden border border-[var(--border)]">
-                    <div id="kioskProgressBar" class="h-full bg-gradient-to-r from-[var(--border)] to-[var(--accent)] w-1/3 transition-all"></div>
+                    <div id="kioskProgressBar" class="h-full w-full origin-left bg-gradient-to-r from-[var(--border)] to-[var(--accent)]" style="transform: scaleX(0)"></div>
                 </div>
                 <button id="exitKioskBtn" class="px-3 py-1.5 rounded-lg bg-[var(--surface-sunken)] hover:bg-[var(--border)] border border-[var(--border)] text-xs font-mono text-[var(--muted)] hover:text-[var(--fg)]">
                     Exit Exam
@@ -600,7 +600,7 @@
         </button>
 
         <!-- Expandable Chatbot Window -->
-        <div id="noahWidgetWindow" class="hidden fixed bottom-24 right-6 w-96 max-w-[calc(100vw-3rem)] glass-card rounded-xl overflow-hidden transform transition-all duration-300 scale-95 opacity-0" role="dialog" aria-modal="true" aria-labelledby="noahWidgetHeading">
+        <div id="noahWidgetWindow" class="hidden fixed bottom-24 right-6 w-96 max-w-[calc(100vw-3rem)] glass-card rounded-xl overflow-hidden scale-95 opacity-0" role="dialog" aria-modal="true" aria-labelledby="noahWidgetHeading">
             <div class="bg-[var(--surface)] p-4 border-b border-[var(--border)] flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <div class="w-8 h-8 rounded-lg bg-[var(--border)] border border-[var(--border)] flex items-center justify-center text-[var(--muted)]">
