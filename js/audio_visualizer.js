@@ -14,7 +14,11 @@ class UltronParticleCore {
         this.canvas = document.getElementById('ultronCanvas');
         if (!this.canvas) return;
         this.container = this.canvas.parentElement;
-        this.mode = 'idle'; // 'idle', 'speaking', 'listening'
+        // Starts 'ambient' (sparse scattered particles, no sphere) for the
+        // landing hero's first viewport — app.js switches this to 'idle' the
+        // moment the visitor heads into the kiosk/login flow, which is where
+        // the dense sphere is reserved for now.
+        this.mode = 'ambient'; // 'ambient', 'idle', 'speaking', 'listening'
         this.COUNT = 16000;
         this.SPEED_MULT = 1.0;
 
@@ -55,6 +59,18 @@ class UltronParticleCore {
         // local-as-world positions — stays correctly aligned with what's
         // visually under the pointer).
         this.centerOffsetX = 0;
+
+        // Paused while off-screen — besides the wasted GPU/battery cost of
+        // rendering a canvas nobody can see, running this bloom pass at the
+        // same time as the "Who Is NOAH" nebula's own bloom pass overwhelms
+        // constrained/software GPU renderers badly enough to corrupt the
+        // whole page's frame. Only one bloom-heavy scene should ever be
+        // actively compositing at once.
+        this.visible = true;
+        this.visibilityObserver = new IntersectionObserver((entries) => {
+            for (const entry of entries) this.visible = entry.isIntersecting;
+        }, { threshold: 0.01 });
+        this.visibilityObserver.observe(this.canvas);
 
         this.initThree();
         this.initSwarm();
@@ -182,6 +198,20 @@ class UltronParticleCore {
             this.dustSeed.push(Math.random() * Math.PI * 2);
         }
 
+        // 'ambient' mode (the landing hero's first viewport) scatters every
+        // particle like the mist above — no exclusion zone needed since no
+        // sphere ever forms while this mode is active.
+        this.ambientBase = [];
+        this.ambientSeed = [];
+        for (let i = 0; i < this.COUNT; i++) {
+            this.ambientBase.push(new THREE.Vector3(
+                (Math.random() - 0.5) * 300,
+                (Math.random() - 0.5) * 140,
+                (Math.random() - 0.5) * 120
+            ));
+            this.ambientSeed.push(Math.random() * Math.PI * 2);
+        }
+
         // Positions buffer array
         this.positions = [];
         for (let i = 0; i < this.COUNT; i++) {
@@ -231,6 +261,14 @@ class UltronParticleCore {
             if (onComplete) onComplete();
             return;
         }
+        // Coming from the hero's ambient scatter, the sphere has to actually
+        // be forming before it can visibly expand — switching modes here (not
+        // through setMode, which would also reset the target params below)
+        // lets the ambient particles converge into the sphere shape right as
+        // the expansion ramps up, instead of expanding nothing.
+        if (this.mode === 'ambient') {
+            this.mode = 'idle';
+        }
         this.params.targetScale = 90;
         this.params.targetChaos = 2.2;
         this.params.targetRotation = 3.2;
@@ -246,6 +284,7 @@ class UltronParticleCore {
         requestAnimationFrame(() => this.animate());
 
         const delta = this.clock.getDelta();
+        if (!this.visible) return;
         const time = this.reducedMotion ? 0 : this.clock.getElapsedTime() * this.SPEED_MULT;
 
         // Smooth parameter interpolation
@@ -279,7 +318,20 @@ class UltronParticleCore {
             const isDust = i >= this.DUST_START;
             const theta = i * golden;
 
-            if (isDust) {
+            if (this.mode === 'ambient') {
+                // Every particle scatters like the mist below — the sphere
+                // never forms in this mode, matching the plain-text-and-light-
+                // particles landing hero (the sphere is saved for the kiosk/
+                // login flow, entered via setMode('idle') elsewhere).
+                const base = this.ambientBase[i];
+                const seed = this.ambientSeed[i];
+                this.target.set(
+                    base.x + Math.sin(time * 0.15 + seed) * 4,
+                    base.y + Math.cos(time * 0.12 + seed) * 4,
+                    base.z + Math.sin(time * 0.1 + seed * 2) * 4
+                );
+                this.color.setHSL(0.06, 0.04, 0.32 + 0.08 * Math.sin(time * 0.5 + seed));
+            } else if (isDust) {
                 // Ambient mist: a slow, tiny wander around its fixed scattered
                 // base point — alive, but not organizing into the sphere.
                 const base = this.dustBase[i - this.DUST_START];

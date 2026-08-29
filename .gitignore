@@ -7,3 +7,4 @@ backend/app/routers/__pycache__/
 backend/noah.db
 backend/.env
 node_modules/
+.DS_Store
