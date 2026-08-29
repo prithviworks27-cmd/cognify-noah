@@ -27,6 +27,33 @@
     --bg-card: var(--surface);
 }
 
+/* Real light theme, following the OS/browser preference — every color in
+   the app is routed through these tokens (index.html/app.js use
+   bg-[var(--bg)] etc., never literal hex), so overriding them here is
+   enough to reflow the whole site. Accent/success/destructive stay
+   constant across themes; only the neutral bg/surface/fg/muted/border
+   scale flips.
+
+   The particle canvas (audio_visualizer.js) deliberately does NOT follow
+   this — it stays dark in both themes, a fixed "window into NOAH's neural
+   core" rather than a flat page element. Bloom post-processing only reads
+   as glow against a dark backdrop; inverting it to bright particles on a
+   light canvas was tried and made the bloom threshold pick up the bright
+   background itself, blowing the whole canvas out to solid white. CSS
+   can't reach into the canvas anyway (WebGL, not a styled element), so
+   this split — light chrome, permanently-dark hero visual — is the
+   working shape, not a shortcut. */
+@media (prefers-color-scheme: light) {
+    :root {
+        --bg: #F5F5F3;
+        --surface: #FFFFFF;
+        --surface-sunken: #ECECE9;
+        --fg: #0A0A0A;
+        --muted: #6E6E6C;
+        --border: #E2E2DF;
+    }
+}
+
 body {
     font-family: 'Archivo', sans-serif;
     background-color: var(--bg);
@@ -137,24 +164,3 @@ code, .font-mono {
     background: var(--accent);
 }
 
-/* TEMPORARY light-mode preview. Every color in this app is hardcoded as a
-   literal hex Tailwind arbitrary value (bg-[#080808] etc.) rather than
-   routed through the --bg/--fg/... variables above, so there's no cheap
-   "flip the tokens" path to a real light theme — that would mean rewriting
-   every color utility across index.html and every JS-rendered template
-   string. This filter-invert is a fast, fully reversible stand-in instead:
-   remove the "light-mode-preview" class from <html> (or delete this block)
-   to go back to the real dark theme exactly as it was. */
-html.light-mode-preview {
-    filter: invert(1) hue-rotate(180deg);
-}
-
-/* The particle canvas clears to transparent, so it normally just shows the
-   page background through it. #120B00 looks like a near-black warm brown
-   here, but it's chosen so that after the invert(1) hue-rotate(180deg)
-   above runs on it a second time (this element sits inside the filtered
-   <html>), it comes out the other side as a creamy off-white (~#FAF3E7)
-   instead of the page's plain white. */
-html.light-mode-preview #ultronCanvasContainer {
-    background-color: #120B00;
-}

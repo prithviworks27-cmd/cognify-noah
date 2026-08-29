@@ -41,6 +41,7 @@ class AppController {
         this.bindAdminEvents();
         this.bindFileUploadEvents();
         this.bindWhoIsNoahReveal();
+        this.bindHeroScrollBlur();
 
         this.updateUserAuthHeaderUI();
         await this.renderSubjectAndPapers();
@@ -241,6 +242,24 @@ class AppController {
         }, { threshold: [0, 0.35] });
 
         observer.observe(canvasBox);
+    }
+
+    // --- Hero blur-on-scroll ---
+    // Motion's scroll() binds an animation directly to scroll progress
+    // (hardware-accelerated via ScrollTimeline where supported) rather than
+    // recomputing style on every scroll event by hand — the vanilla-JS
+    // equivalent of React's useScroll()/useTransform() pairing. As the hero
+    // text scrolls from fully in view to fully past the top of the
+    // viewport, it progressively blurs, signaling the handoff to the
+    // "Who Is NOAH" section instead of just vanishing off-screen.
+    bindHeroScrollBlur() {
+        const heroContent = document.getElementById('landingHeroContent');
+        if (!heroContent || !window.Motion || !window.Motion.scroll || this.prefersReducedMotion()) return;
+
+        window.Motion.scroll(
+            window.Motion.animate(heroContent, { filter: ['blur(0px)', 'blur(10px)'] }, { ease: 'linear' }),
+            { target: heroContent, offset: ['start start', 'end start'] }
+        );
     }
 
     // --- Auth UI Management ---

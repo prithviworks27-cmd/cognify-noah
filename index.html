@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="light-mode-preview">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -96,7 +96,12 @@
              separate column next to it. -->
         <section id="view-landing" class="view-panel flex-grow relative">
 
-            <div class="relative flex flex-col items-center justify-center min-h-[calc(100vh-5rem)] overflow-hidden">
+            <!-- No overflow-hidden here (removed) — the canvas fills this
+                 exactly via inset-0 so it never needed clipping, and CSS
+                 overflow other than visible makes an element a scroll
+                 container, which risks confusing bindHeroScrollBlur's
+                 ViewTimeline (app.js) about which element's scroll to track. -->
+            <div class="relative flex flex-col items-center justify-center min-h-[calc(100vh-5rem)]">
 
                 <!-- Full-page interactive particle field (NOAH is ambiently present everywhere) -->
                 <div id="ultronCanvasContainer" class="absolute inset-0 z-0">
