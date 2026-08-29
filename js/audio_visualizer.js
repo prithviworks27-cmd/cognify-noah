@@ -25,6 +25,30 @@ class UltronParticleCore {
         // state without the ceaseless ambient motion.
         this.reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
+        // Follows the same light/dark tokens as the rest of the page —
+        // CSS can't reach into a WebGL canvas, so this is done here.
+        // Lightness gets inverted per theme (_themedLightness) so bright
+        // particles-on-dark become dark particles-on-light, same contrast
+        // either way. Bloom is SKIPPED entirely in light mode rather than
+        // just recolored: bloom extracts and glows anything above a
+        // brightness threshold, and a bright page background exceeds that
+        // threshold just as much as a bright particle would, blowing the
+        // whole canvas out to solid white. Dark particles don't want a
+        // glow anyway — bloom simulates emitted light, which only reads
+        // as "glowing" against a dark backdrop.
+        this.lightModeQuery = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)');
+        this.isLightMode = !!(this.lightModeQuery && this.lightModeQuery.matches);
+        if (this.lightModeQuery) {
+            this.lightModeQuery.addEventListener('change', (e) => {
+                this.isLightMode = e.matches;
+                const themeColor = this.isLightMode ? 0xf5f5f3 : 0x080808;
+                if (this.scene) {
+                    if (this.scene.fog) this.scene.fog.color.set(themeColor);
+                    if (this.scene.background) this.scene.background.set(themeColor);
+                }
+            });
+        }
+
         // State parameters reactive to NOAH audio & voice states
         this.params = {
             scale: 48,
@@ -92,7 +116,13 @@ class UltronParticleCore {
 
         // 1. Scene & Camera
         this.scene = new THREE.Scene();
-        this.scene.fog = new THREE.FogExp2(0x080808, 0.008);
+        this.scene.fog = new THREE.FogExp2(this.isLightMode ? 0xf5f5f3 : 0x080808, 0.008);
+        // Explicit opaque background rather than relying on the canvas's own
+        // alpha: true — the bloom composite (dark-mode render path) flattens
+        // alpha to opaque black regardless, so an unset background already
+        // silently painted black; naming it explicitly keeps light mode
+        // (which skips the composite) painting the right color too.
+        this.scene.background = new THREE.Color(this.isLightMode ? 0xf5f5f3 : 0x080808);
 
         this.camera = new THREE.PerspectiveCamera(this._fovForAspect(width / height), width / height, 0.1, 2000);
         // Pulled back further than the original boxed layout (was 95) — the
@@ -290,7 +320,7 @@ class UltronParticleCore {
                     base.z + Math.sin(time * 0.1 + seed * 2) * 4
                 );
                 // Dim, quiet grey — background texture, not the main figure.
-                this.color.setHSL(0.06, 0.04, 0.32 + 0.08 * Math.sin(time * 0.5 + seed));
+                this.color.setHSL(0.06, 0.04, this._themedLightness(0.32 + 0.08 * Math.sin(time * 0.5 + seed)));
             } else {
                 // NOAH's neural core — a Fibonacci-lattice shell that breathes,
                 // ripples with a signal wave, and turns as a rigid body, ported
@@ -340,13 +370,13 @@ class UltronParticleCore {
                 const pulse = 0.5 + 0.5 * Math.sin(time * 4 + theta * 3);
                 if (this.mode === 'listening') {
                     const light = 0.55 + pulse * 0.2;
-                    this.color.setHSL(0.07, 0.2, light);
+                    this.color.setHSL(0.07, 0.2, this._themedLightness(light));
                 } else if (this.mode === 'speaking') {
                     const light = 0.45 + pulse * 0.25;
-                    this.color.setHSL(0.065, 0.85, light);
+                    this.color.setHSL(0.065, 0.85, this._themedLightness(light));
                 } else {
                     const light = 0.55 + pulse * 0.2;
-                    this.color.setHSL(0.06, 0.06, light);
+                    this.color.setHSL(0.06, 0.06, this._themedLightness(light));
                 }
             }
 
@@ -384,12 +414,27 @@ class UltronParticleCore {
             this.instancedMesh.instanceColor.needsUpdate = true;
         }
 
-        this.composer.render();
+        // Bloom is skipped in light mode — see the constructor comment on
+        // isLightMode for why (a bright background exceeds the bloom
+        // threshold just as much as a bright particle would).
+        if (this.isLightMode) {
+            this.renderer.render(this.scene, this.camera);
+        } else {
+            this.composer.render();
+        }
     }
 
     _smoothstep(edge0, edge1, x) {
         const t = Math.min(1, Math.max(0, (x - edge0) / (edge1 - edge0)));
         return t * t * (3 - 2 * t);
+    }
+
+    // Every particle lightness value in animate() is authored for the dark
+    // theme (bright particles on a near-black page). Flipping it around the
+    // midpoint for light mode preserves the same contrast against the
+    // near-white page instead of the particles washing out against it.
+    _themedLightness(l) {
+        return this.isLightMode ? 1 - l : l;
     }
 
     // The container is only ever half the viewport width (the landing page's

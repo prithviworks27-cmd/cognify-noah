@@ -8,16 +8,26 @@
    fetch instead of letting the browser discover and fetch it in parallel. */
 
 :root {
-    /* Berkeley Mono isn't freely distributable — JetBrains Mono stands in for
-       it as the closest openly-licensed technical monospace. */
-    --bg: #080808;
-    --surface: #090909;
-    /* Recessed surfaces — inputs, nested panels — one shade darker than
-       --surface. Was hardcoded as #0d0d0d throughout index.html/app.js. */
-    --surface-sunken: #0d0d0d;
-    --fg: #F2F2F0;
-    --muted: #4A4A49;
-    --border: #1A1A1A;
+    /* Light is now the default look — every color in the app is routed
+       through these tokens (index.html/app.js use bg-[var(--bg)] etc.,
+       never literal hex), so this is the one place that sets it.
+       Accent/success/destructive stay constant across themes; only the
+       neutral bg/surface/fg/muted/border scale flips for dark, below.
+
+       The particle canvas (audio_visualizer.js) follows this too, but CSS
+       can't reach into it (WebGL, not a styled element) — it watches the
+       same prefers-color-scheme media query itself, inverting particle
+       lightness and skipping its bloom post-processing pass entirely in
+       light mode. Bloom only reads as glow against a dark backdrop; a
+       bright page background exceeds the bloom threshold just as much as
+       a bright particle would, which otherwise blows the whole canvas out
+       to solid white. */
+    --bg: #F5F5F3;
+    --surface: #FFFFFF;
+    --surface-sunken: #ECECE9;
+    --fg: #0A0A0A;
+    --muted: #6E6E6C;
+    --border: #E2E2DF;
     --accent: #FF6901;
     --success: #00C758;
     --destructive: #FB2C36;
@@ -27,30 +37,20 @@
     --bg-card: var(--surface);
 }
 
-/* Real light theme, following the OS/browser preference — every color in
-   the app is routed through these tokens (index.html/app.js use
-   bg-[var(--bg)] etc., never literal hex), so overriding them here is
-   enough to reflow the whole site. Accent/success/destructive stay
-   constant across themes; only the neutral bg/surface/fg/muted/border
-   scale flips.
-
-   The particle canvas (audio_visualizer.js) deliberately does NOT follow
-   this — it stays dark in both themes, a fixed "window into NOAH's neural
-   core" rather than a flat page element. Bloom post-processing only reads
-   as glow against a dark backdrop; inverting it to bright particles on a
-   light canvas was tried and made the bloom threshold pick up the bright
-   background itself, blowing the whole canvas out to solid white. CSS
-   can't reach into the canvas anyway (WebGL, not a styled element), so
-   this split — light chrome, permanently-dark hero visual — is the
-   working shape, not a shortcut. */
-@media (prefers-color-scheme: light) {
+/* Dark theme, for visitors whose OS/browser prefers it — the site's
+   original "Mission Control" look (high-density dark, monochromatic,
+   single orange accent, mono-first type, hard 1px rails instead of soft
+   shadows/blur). Berkeley Mono isn't freely distributable — JetBrains
+   Mono stands in for it as the closest openly-licensed technical
+   monospace (see the font-family declarations below). */
+@media (prefers-color-scheme: dark) {
     :root {
-        --bg: #F5F5F3;
-        --surface: #FFFFFF;
-        --surface-sunken: #ECECE9;
-        --fg: #0A0A0A;
-        --muted: #6E6E6C;
-        --border: #E2E2DF;
+        --bg: #080808;
+        --surface: #090909;
+        --surface-sunken: #0d0d0d;
+        --fg: #F2F2F0;
+        --muted: #4A4A49;
+        --border: #1A1A1A;
     }
 }
 
