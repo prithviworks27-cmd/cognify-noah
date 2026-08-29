@@ -94,40 +94,81 @@
              reads as "on the right" without being boxed into a rectangle —
              the text overlays it on the left instead of sitting in a
              separate column next to it. -->
-        <section id="view-landing" class="view-panel flex-grow relative flex flex-col items-center justify-center min-h-[calc(100vh-5rem)] overflow-hidden">
+        <section id="view-landing" class="view-panel flex-grow relative">
 
-            <!-- Full-page interactive particle field (NOAH is ambiently present everywhere) -->
-            <div id="ultronCanvasContainer" class="absolute inset-0 z-0">
-                <canvas id="ultronCanvas" class="w-full h-full block"></canvas>
+            <div class="relative flex flex-col items-center justify-center min-h-[calc(100vh-5rem)] overflow-hidden">
+
+                <!-- Full-page interactive particle field (NOAH is ambiently present everywhere) -->
+                <div id="ultronCanvasContainer" class="absolute inset-0 z-0">
+                    <canvas id="ultronCanvas" class="w-full h-full block"></canvas>
+                </div>
+
+                <!-- Title + Login, overlaid on the left — pointer-events-none so
+                     clicks pass through to the canvas beneath except on the
+                     actual buttons. -->
+                <div id="landingHeroContent" class="relative z-10 w-full max-w-2xl flex flex-col items-center md:items-start justify-center text-center md:text-left px-6 sm:px-10 md:px-14 space-y-6 transition-all duration-700 pointer-events-none mr-auto">
+
+                    <!-- System Status Tag -->
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-sm border border-[var(--border)] text-[var(--muted)] text-[11px] font-mono font-medium tracking-[0.12em] uppercase">
+                        <span class="w-[9px] h-[9px] bg-[var(--accent)] animate-pulse-glow"></span>
+                        <span>NOAH Audio Neural Engine • Active</span>
+                    </div>
+
+                    <!-- Giant NOAH Title -->
+                    <h1 class="text-6xl sm:text-7xl lg:text-8xl font-bold tracking-[-0.02em] text-[var(--fg)] uppercase">
+                        NOAH
+                    </h1>
+
+                    <!-- Action Buttons -->
+                    <div class="flex flex-wrap items-center justify-center md:justify-start gap-4 pt-2 pointer-events-auto">
+                        <button data-view-target="student-kiosk" class="btn-ultron px-8 py-4 font-mono font-medium text-sm uppercase tracking-[0.04em]">
+                            <span>Launch Student Portal</span>
+                        </button>
+
+                        <button data-view-target="staff-dashboard" class="px-8 py-4 rounded-full border border-[var(--border)] hover:border-[var(--muted)] text-[var(--fg)] font-mono font-medium text-sm uppercase tracking-[0.04em] transition">
+                            <span>Admin Dashboard</span>
+                        </button>
+                    </div>
+
+                </div>
+
             </div>
 
-            <!-- Title + Login, overlaid on the left — pointer-events-none so
-                 clicks pass through to the canvas beneath except on the
-                 actual buttons. -->
-            <div id="landingHeroContent" class="relative z-10 w-full max-w-2xl flex flex-col items-center md:items-start justify-center text-center md:text-left px-6 sm:px-10 md:px-14 space-y-6 transition-all duration-700 pointer-events-none mr-auto">
+            <!-- "WHO IS NOAH" — scroll-revealed, below the hero fold. Text
+                 and particles sit in separate flex columns (stacked on
+                 mobile) instead of one overlaid on the other — the particle
+                 box is bounded/bordered/clipped, the same pattern the exam
+                 kiosk already uses for its own particle window, so the
+                 swarm can never render under or near the copy. Reuses the
+                 single sphere canvas (re-parented here on scroll, see
+                 bindWhoIsNoahReveal in app.js) rather than a second WebGL
+                 scene. -->
+            <div class="relative flex flex-col md:flex-row items-center gap-10 md:gap-16 min-h-screen px-6 sm:px-10 md:px-14 py-24 max-w-6xl mx-auto w-full">
+                <div id="whoIsNoahContent" class="w-full md:w-1/2 text-center md:text-left space-y-6 opacity-0">
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-sm border border-[var(--border)] text-[var(--muted)] text-[11px] font-mono font-medium tracking-[0.12em] uppercase">
+                        <span>Who Is NOAH</span>
+                    </div>
 
-                <!-- System Status Tag -->
-                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-sm border border-[var(--border)] text-[var(--muted)] text-[11px] font-mono font-medium tracking-[0.12em] uppercase">
-                    <span class="w-[9px] h-[9px] bg-[var(--accent)] animate-pulse-glow"></span>
-                    <span>NOAH Audio Neural Engine • Active</span>
+                    <h2 class="text-3xl sm:text-4xl font-bold tracking-[-0.02em] text-[var(--fg)]">
+                        NOAH is Cognify's oral examiner — an AI that asks, listens, and grades out loud.
+                    </h2>
+
+                    <p class="text-sm sm:text-base text-[var(--muted)] leading-relaxed">
+                        Upload a test paper as a PDF or a photo. NOAH reads it, extracts every question, and asks each one aloud to the student — one at a time, by voice. It listens to the spoken answer in real time, evaluates it for conceptual completeness, and moves to the next question.
+                    </p>
+
+                    <p class="text-sm sm:text-base text-[var(--muted)] leading-relaxed">
+                        Every session ends with a full breakdown: a final score, correct/partial/wrong accuracy, struggling topics flagged by subject, and a note on pronunciation and audio clarity — visible to both the student and the institute's admin dashboard.
+                    </p>
+
+                    <p class="text-sm sm:text-base text-[var(--fg)] font-medium leading-relaxed">
+                        No multiple choice. No typing. Just a conversation NOAH is having with every student, one question at a time.
+                    </p>
                 </div>
 
-                <!-- Giant NOAH Title -->
-                <h1 class="text-6xl sm:text-7xl lg:text-8xl font-bold tracking-[-0.02em] text-[var(--fg)] uppercase">
-                    NOAH
-                </h1>
-
-                <!-- Action Buttons -->
-                <div class="flex flex-wrap items-center justify-center md:justify-start gap-4 pt-2 pointer-events-auto">
-                    <button data-view-target="student-kiosk" class="btn-ultron px-8 py-4 font-mono font-medium text-sm uppercase tracking-[0.04em]">
-                        <span>Launch Student Portal</span>
-                    </button>
-
-                    <button data-view-target="staff-dashboard" class="px-8 py-4 rounded-full border border-[var(--border)] hover:border-[var(--muted)] text-[var(--fg)] font-mono font-medium text-sm uppercase tracking-[0.04em] transition">
-                        <span>Admin Dashboard</span>
-                    </button>
+                <div id="whoIsNoahCanvasContainer" class="w-full md:w-1/2 h-72 sm:h-96 md:h-[28rem] rounded-xl overflow-hidden relative border border-[var(--border)] bg-[var(--surface)] opacity-0">
+                    <!-- ultronCanvas is re-parented here dynamically on scroll -->
                 </div>
-
             </div>
 
         </section>

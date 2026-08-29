@@ -40,6 +40,7 @@ class AppController {
         this.bindExamEvents();
         this.bindAdminEvents();
         this.bindFileUploadEvents();
+        this.bindWhoIsNoahReveal();
 
         this.updateUserAuthHeaderUI();
         await this.renderSubjectAndPapers();
@@ -204,6 +205,42 @@ class AppController {
             if (menu.classList.contains('hidden')) return;
             if (!menu.contains(e.target) && !toggleBtn.contains(e.target)) closeMenu();
         });
+    }
+
+    // --- "Who Is NOAH" Scroll Reveal ---
+    // Reuses the single sphere canvas rather than a second WebGL scene
+    // (two persistent bloom-heavy scenes at once has previously corrupted
+    // rendering on constrained GPUs). Scrolling this section into view
+    // re-parents the same canvas into its own bordered/clipped box —
+    // exactly like the existing kiosk re-parenting — so the swarm is
+    // physically confined to that box and can never render under the copy,
+    // which sits in a separate flex column entirely. Scrolling back to the
+    // hero moves the canvas back.
+    bindWhoIsNoahReveal() {
+        const content = document.getElementById('whoIsNoahContent');
+        const canvasBox = document.getElementById('whoIsNoahCanvasContainer');
+        if (!content || !canvasBox || !window.IntersectionObserver) return;
+
+        let revealed = false;
+
+        const observer = new IntersectionObserver((entries) => {
+            for (const entry of entries) {
+                if (!window.audioVisualizer || this.currentView !== 'landing') continue;
+
+                if (entry.isIntersecting) {
+                    window.audioVisualizer.moveToContainer('whoIsNoahCanvasContainer');
+                    if (!revealed) {
+                        revealed = true;
+                        this.motionAnimate(content, { opacity: [0, 1], y: [24, 0] }, { duration: 0.8, ease: 'easeOut' });
+                        this.motionAnimate(canvasBox, { opacity: [0, 1], scale: [0.96, 1] }, { duration: 0.8, ease: 'easeOut' });
+                    }
+                } else {
+                    window.audioVisualizer.moveToContainer('ultronCanvasContainer');
+                }
+            }
+        }, { threshold: [0, 0.35] });
+
+        observer.observe(canvasBox);
     }
 
     // --- Auth UI Management ---
