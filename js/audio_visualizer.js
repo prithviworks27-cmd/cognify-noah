@@ -431,10 +431,12 @@ class UltronParticleCore {
 
     // Every particle lightness value in animate() is authored for the dark
     // theme (bright particles on a near-black page). Flipping it around the
-    // midpoint for light mode preserves the same contrast against the
-    // near-white page instead of the particles washing out against it.
+    // midpoint would give light mode a mid-grey particle — legible, but
+    // faint against the near-white page — so the flipped value is pulled
+    // further toward black (halved) for real contrast instead of just a
+    // literal inversion.
     _themedLightness(l) {
-        return this.isLightMode ? 1 - l : l;
+        return this.isLightMode ? (1 - l) * 0.5 : l;
     }
 
     // The container is only ever half the viewport width (the landing page's
