@@ -94,80 +94,40 @@
              reads as "on the right" without being boxed into a rectangle —
              the text overlays it on the left instead of sitting in a
              separate column next to it. -->
-        <section id="view-landing" class="view-panel flex-grow relative">
+        <section id="view-landing" class="view-panel flex-grow relative flex flex-col items-center justify-center min-h-[calc(100vh-5rem)] overflow-hidden">
 
-            <!-- First viewport: plain NOAH text over sparse ambient particles
-                 only — the dense particle swarm doesn't form here. It's
-                 reserved for the "Who is NOAH" section below, so scrolling
-                 is what reveals it. -->
-            <div class="relative flex flex-col items-center justify-center min-h-[calc(100vh-5rem)] overflow-hidden">
-
-                <!-- Full-page interactive particle field (NOAH is ambiently present everywhere) -->
-                <div id="ultronCanvasContainer" class="absolute inset-0 z-0">
-                    <canvas id="ultronCanvas" class="w-full h-full block"></canvas>
-                </div>
-
-                <!-- Title + Login, overlaid on the left — pointer-events-none so
-                     clicks pass through to the canvas beneath except on the
-                     actual buttons. -->
-                <div id="landingHeroContent" class="relative z-10 w-full max-w-2xl flex flex-col items-center md:items-start justify-center text-center md:text-left px-6 sm:px-10 md:px-14 space-y-6 transition-all duration-700 pointer-events-none mr-auto">
-
-                    <!-- System Status Tag -->
-                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-sm border border-[var(--border)] text-[var(--muted)] text-[11px] font-mono font-medium tracking-[0.12em] uppercase">
-                        <span class="w-[9px] h-[9px] bg-[var(--accent)] animate-pulse-glow"></span>
-                        <span>NOAH Audio Neural Engine • Active</span>
-                    </div>
-
-                    <!-- Giant NOAH Title -->
-                    <h1 class="text-6xl sm:text-7xl lg:text-8xl font-bold tracking-[-0.02em] text-[var(--fg)] uppercase">
-                        NOAH
-                    </h1>
-
-                    <!-- Action Buttons -->
-                    <div class="flex flex-wrap items-center justify-center md:justify-start gap-4 pt-2 pointer-events-auto">
-                        <button data-view-target="student-kiosk" class="btn-ultron px-8 py-4 font-mono font-medium text-sm uppercase tracking-[0.04em]">
-                            <span>Launch Student Portal</span>
-                        </button>
-
-                        <button data-view-target="staff-dashboard" class="px-8 py-4 rounded-full border border-[var(--border)] hover:border-[var(--muted)] text-[var(--fg)] font-mono font-medium text-sm uppercase tracking-[0.04em] transition">
-                            <span>Admin Dashboard</span>
-                        </button>
-                    </div>
-
-                </div>
-
+            <!-- Full-page interactive particle field (NOAH is ambiently present everywhere) -->
+            <div id="ultronCanvasContainer" class="absolute inset-0 z-0">
+                <canvas id="ultronCanvas" class="w-full h-full block"></canvas>
             </div>
 
-            <!-- Second viewport: scroll-revealed "Who is NOAH" section. The
-                 rose nebula canvas and copy fade/scale in via Motion once
-                 this section enters the viewport (see bindWhoIsNoahReveal
-                 in app.js), instead of rendering at page load. -->
-            <div id="whoIsNoahSection" class="relative overflow-hidden py-24 sm:py-32 px-6 sm:px-10 md:px-14 min-h-screen flex items-center">
-                <div id="roseNebulaCanvasContainer" class="absolute inset-0 z-0">
-                    <canvas id="roseNebulaCanvas" class="w-full h-full block"></canvas>
+            <!-- Title + Login, overlaid on the left — pointer-events-none so
+                 clicks pass through to the canvas beneath except on the
+                 actual buttons. -->
+            <div id="landingHeroContent" class="relative z-10 w-full max-w-2xl flex flex-col items-center md:items-start justify-center text-center md:text-left px-6 sm:px-10 md:px-14 space-y-6 transition-all duration-700 pointer-events-none mr-auto">
+
+                <!-- System Status Tag -->
+                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-sm border border-[var(--border)] text-[var(--muted)] text-[11px] font-mono font-medium tracking-[0.12em] uppercase">
+                    <span class="w-[9px] h-[9px] bg-[var(--accent)] animate-pulse-glow"></span>
+                    <span>NOAH Audio Neural Engine • Active</span>
                 </div>
 
-                <div id="whoIsNoahContent" class="relative z-10 w-full max-w-2xl mx-auto text-center space-y-6 opacity-0 bg-[var(--bg)]/70 backdrop-blur-sm rounded-2xl p-8 sm:p-10">
-                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-sm border border-[var(--border)] text-[var(--muted)] text-[11px] font-mono font-medium tracking-[0.12em] uppercase">
-                        <span>Who Is NOAH</span>
-                    </div>
+                <!-- Giant NOAH Title -->
+                <h1 class="text-6xl sm:text-7xl lg:text-8xl font-bold tracking-[-0.02em] text-[var(--fg)] uppercase">
+                    NOAH
+                </h1>
 
-                    <h2 class="text-3xl sm:text-4xl font-bold tracking-[-0.02em] text-[var(--fg)]">
-                        NOAH is Cognify's oral examiner — an AI that asks, listens, and grades out loud.
-                    </h2>
+                <!-- Action Buttons -->
+                <div class="flex flex-wrap items-center justify-center md:justify-start gap-4 pt-2 pointer-events-auto">
+                    <button data-view-target="student-kiosk" class="btn-ultron px-8 py-4 font-mono font-medium text-sm uppercase tracking-[0.04em]">
+                        <span>Launch Student Portal</span>
+                    </button>
 
-                    <p class="text-sm sm:text-base text-[var(--muted)] leading-relaxed">
-                        Upload a test paper as a PDF or a photo. NOAH reads it, extracts every question, and asks each one aloud to the student — one at a time, by voice. It listens to the spoken answer in real time, evaluates it for conceptual completeness, and moves to the next question.
-                    </p>
-
-                    <p class="text-sm sm:text-base text-[var(--muted)] leading-relaxed">
-                        Every session ends with a full breakdown: a final score, correct/partial/wrong accuracy, struggling topics flagged by subject, and a note on pronunciation and audio clarity — visible to both the student and the institute's admin dashboard.
-                    </p>
-
-                    <p class="text-sm sm:text-base text-[var(--fg)] font-medium leading-relaxed">
-                        No multiple choice. No typing. Just a conversation NOAH is having with every student, one question at a time.
-                    </p>
+                    <button data-view-target="staff-dashboard" class="px-8 py-4 rounded-full border border-[var(--border)] hover:border-[var(--muted)] text-[var(--fg)] font-mono font-medium text-sm uppercase tracking-[0.04em] transition">
+                        <span>Admin Dashboard</span>
+                    </button>
                 </div>
+
             </div>
 
         </section>
@@ -656,9 +616,8 @@
     <script src="js/auth.js"></script>
     <script src="js/document_parser.js"></script>
     <script src="js/voice_engine.js"></script>
-    <!-- Three.js Module Visualizer Scripts -->
+    <!-- Three.js Module Visualizer Script -->
     <script type="module" src="js/audio_visualizer.js"></script>
-    <script type="module" src="js/rose_nebula.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

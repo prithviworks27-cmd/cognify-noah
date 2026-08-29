@@ -40,7 +40,6 @@ class AppController {
         this.bindExamEvents();
         this.bindAdminEvents();
         this.bindFileUploadEvents();
-        this.bindWhoIsNoahReveal();
 
         this.updateUserAuthHeaderUI();
         await this.renderSubjectAndPapers();
@@ -133,11 +132,6 @@ class AppController {
 
         if (viewName === 'landing' && window.audioVisualizer) {
             window.audioVisualizer.moveToContainer('ultronCanvasContainer');
-            // The sphere is reserved for the kiosk/login flow — coming back
-            // to the hero (e.g. via nav, or Log Out) should always land on
-            // the plain-text-and-ambient-particles state, not a leftover
-            // idle/speaking/listening sphere from whatever happened before.
-            window.audioVisualizer.setMode('ambient');
         }
 
         if (viewName === 'student-kiosk') {
@@ -210,33 +204,6 @@ class AppController {
             if (menu.classList.contains('hidden')) return;
             if (!menu.contains(e.target) && !toggleBtn.contains(e.target)) closeMenu();
         });
-    }
-
-    // --- "Who Is NOAH" Scroll Reveal ---
-    // The rose nebula is only constructed the first time this section enters
-    // the viewport — it's a second full WebGL scene, so building it at page
-    // load would cost GPU/CPU for a visual most visitors haven't scrolled to
-    // yet. The reveal itself fades/scales the copy in via the same
-    // motionAnimate() helper the auth modal and widget use.
-    bindWhoIsNoahReveal() {
-        const section = document.getElementById('whoIsNoahSection');
-        const content = document.getElementById('whoIsNoahContent');
-        if (!section || !content || !window.IntersectionObserver) return;
-
-        const observer = new IntersectionObserver((entries) => {
-            for (const entry of entries) {
-                if (!entry.isIntersecting) continue;
-
-                if (window.RoseNebulaCore && !window.roseNebula) {
-                    window.roseNebula = new window.RoseNebulaCore();
-                }
-                this.motionAnimate(content, { opacity: [0, 1], y: [24, 0] }, { duration: 0.8, ease: 'easeOut' });
-
-                observer.unobserve(section);
-            }
-        }, { threshold: 0.25 });
-
-        observer.observe(section);
     }
 
     // --- Auth UI Management ---
