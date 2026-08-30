@@ -816,6 +816,7 @@ class AppController {
 
     async finishKioskExamSession() {
         this.examSession.active = false;
+        if (window.voiceEngine) window.voiceEngine.stopListening();
 
         let totalScore = 0;
         let maxScore = 0;
@@ -936,7 +937,10 @@ class AppController {
                     if (window.audioVisualizer) {
                         window.audioVisualizer.moveToContainer('ultronCanvasContainer');
                     }
-                    if (window.voiceEngine) window.voiceEngine.stopSpeaking();
+                    if (window.voiceEngine) {
+                        window.voiceEngine.stopListening();
+                        window.voiceEngine.stopSpeaking();
+                    }
                 }
             });
         }
