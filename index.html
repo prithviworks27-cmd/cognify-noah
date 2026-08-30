@@ -466,11 +466,11 @@
 
                 <div>
                     <label for="loginStudentEmail" class="block text-xs font-mono text-[var(--muted)] mb-1">Email</label>
-                    <input type="email" id="loginStudentEmail" required placeholder="you@gmail.com" class="w-full px-4 py-2.5 rounded-xl bg-[var(--surface-sunken)] border border-[var(--border)] text-[var(--fg)] text-sm">
+                    <input type="email" id="loginStudentEmail" name="email" autocomplete="email" required placeholder="you@gmail.com" class="w-full px-4 py-2.5 rounded-xl bg-[var(--surface-sunken)] border border-[var(--border)] text-[var(--fg)] text-sm">
                 </div>
                 <div>
                     <label for="loginStudentPassword" class="block text-xs font-mono text-[var(--muted)] mb-1">Password</label>
-                    <input type="password" id="loginStudentPassword" required placeholder="Your password" class="w-full px-4 py-2.5 rounded-xl bg-[var(--surface-sunken)] border border-[var(--border)] text-[var(--fg)] text-sm">
+                    <input type="password" id="loginStudentPassword" name="password" autocomplete="current-password" required placeholder="Your password" class="w-full px-4 py-2.5 rounded-xl bg-[var(--surface-sunken)] border border-[var(--border)] text-[var(--fg)] text-sm">
                 </div>
 
                 <button type="submit" class="btn-ultron w-full py-3 rounded-xl font-bold text-sm mt-2">
@@ -494,11 +494,11 @@
                 </div>
                 <div>
                     <label for="signupStudentEmail" class="block text-xs font-mono text-[var(--muted)] mb-1">Email</label>
-                    <input type="email" id="signupStudentEmail" required placeholder="you@gmail.com" class="w-full px-4 py-2.5 rounded-xl bg-[var(--surface-sunken)] border border-[var(--border)] text-[var(--fg)] text-sm">
+                    <input type="email" id="signupStudentEmail" name="email" autocomplete="email" required placeholder="you@gmail.com" class="w-full px-4 py-2.5 rounded-xl bg-[var(--surface-sunken)] border border-[var(--border)] text-[var(--fg)] text-sm">
                 </div>
                 <div>
                     <label for="signupStudentPassword" class="block text-xs font-mono text-[var(--muted)] mb-1">Password</label>
-                    <input type="password" id="signupStudentPassword" required minlength="6" placeholder="At least 6 characters" class="w-full px-4 py-2.5 rounded-xl bg-[var(--surface-sunken)] border border-[var(--border)] text-[var(--fg)] text-sm">
+                    <input type="password" id="signupStudentPassword" name="password" autocomplete="new-password" required minlength="6" placeholder="At least 6 characters" class="w-full px-4 py-2.5 rounded-xl bg-[var(--surface-sunken)] border border-[var(--border)] text-[var(--fg)] text-sm">
                 </div>
                 <div>
                     <label for="signupStudentId" class="block text-xs font-mono text-[var(--muted)] mb-1">Student ID / Roll Number</label>
@@ -539,7 +539,7 @@
 
                 <div>
                     <label for="authAdminPasskey" class="block text-xs font-mono text-[var(--muted)] mb-1">Admin Passkey</label>
-                    <input type="password" id="authAdminPasskey" required placeholder="Enter passkey" class="w-full px-4 py-2.5 rounded-xl bg-[var(--surface-sunken)] border border-[var(--border)] text-[var(--fg)] text-sm font-mono">
+                    <input type="password" id="authAdminPasskey" name="passkey" autocomplete="off" required placeholder="Enter passkey" class="w-full px-4 py-2.5 rounded-xl bg-[var(--surface-sunken)] border border-[var(--border)] text-[var(--fg)] text-sm font-mono">
                 </div>
 
                 <button type="submit" class="w-full py-3 rounded-xl bg-[var(--muted)] hover:opacity-90 transition font-bold text-[var(--fg)] text-sm mt-2">

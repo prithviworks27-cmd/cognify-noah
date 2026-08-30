@@ -342,6 +342,15 @@ class AppController {
         window.authManager.logout();
         this.updateUserAuthHeaderUI();
         this.switchView('landing');
+
+        // This is a single-page app, so the auth forms are never recreated —
+        // without an explicit reset, a logged-out user's email/password stay
+        // sitting in the DOM and reopening the modal lets them straight back
+        // in with just Enter.
+        ['studentLoginForm', 'studentSignupForm', 'adminLoginForm'].forEach(id => {
+            const form = document.getElementById(id);
+            if (form) form.reset();
+        });
     }
 
     // Shows exactly one of the three auth forms, hiding the other two, and
