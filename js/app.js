@@ -7,7 +7,6 @@ class AppController {
     constructor() {
         this.currentView = 'landing';
         this.widgetOpen = false;
-        this.isWarpTransition = false;
         
         // Student Exam Session State
         this.examSession = {
@@ -76,7 +75,6 @@ class AppController {
 
     // --- Cinematic Login Rush Transition ---
     playCinematicLoginTransition(targetView, onComplete) {
-        this.isWarpTransition = true;
         const heroContent = document.getElementById('landingHeroContent');
         const authModal = document.getElementById('authModal');
 
@@ -93,7 +91,6 @@ class AppController {
         // second, independently-guessed setTimeout racing against it.
         const finishSequence = () => {
             this.switchView(targetView);
-            this.isWarpTransition = false;
 
             if (heroContent) {
                 heroContent.style.pointerEvents = '';

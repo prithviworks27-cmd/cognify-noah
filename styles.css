@@ -21,10 +21,6 @@
     --accent: #FF6901;
     --success: #00C758;
     --destructive: #FB2C36;
-
-    /* Legacy variable names some earlier styles still reference. */
-    --bg-dark: var(--bg);
-    --bg-card: var(--surface);
 }
 
 body {
@@ -59,13 +55,6 @@ code, .font-mono {
     border-color: var(--muted);
 }
 
-/* Kept for HTML compatibility — glow removed per the "no soft shadows/blur,
-   hard borders only" rule. Foreground colour carries the emphasis instead. */
-.text-ultron-glow,
-.text-cyan-glow {
-    text-shadow: none;
-}
-
 /* Pill-shaped, off-white-on-black, mono label — the spec's button recipe. */
 .btn-ultron {
     background: var(--fg);
@@ -95,27 +84,6 @@ code, .font-mono {
     .animate-pulse-glow {
         animation: none;
     }
-}
-
-@keyframes floatAnim {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-8px); }
-}
-
-.animate-float {
-    animation: floatAnim 4s infinite ease-in-out;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .animate-float {
-        animation: none;
-    }
-}
-
-/* Flat, database-style rows — no radius, hard divider only. */
-.rail-row {
-    border-bottom: 1px solid var(--border);
-    padding: 22px 8px;
 }
 
 /* Custom Scrollbar */
