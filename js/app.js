@@ -699,18 +699,39 @@ class AppController {
         document.getElementById('kioskTranscriptBox').innerText = 'Awaiting your spoken response...';
         document.getElementById('kioskFeedbackAlert').classList.add('hidden');
 
-        if (window.voiceEngine) {
+        if (!window.voiceEngine) return;
+
+        const askQuestion = () => {
             window.voiceEngine.speak(question.text, () => {
                 setTimeout(() => this.triggerKioskOralCapture(), 600);
             });
+        };
+
+        // Said once, before the first question, on browsers with no
+        // SpeechRecognition (Safari, Firefox) — otherwise the student never
+        // finds out why the mic never works, since triggerKioskOralCapture()
+        // would silently misreport every attempt as an ordinary audio retry.
+        if (qIndex === 0 && !window.voiceEngine.recognition) {
+            window.voiceEngine.speak(
+                "Notice. Voice input is not supported in this browser. Please type each answer in the box provided.",
+                askQuestion
+            );
+        } else {
+            askQuestion();
         }
     }
 
     triggerKioskOralCapture() {
         const transcriptBox = document.getElementById('kioskTranscriptBox');
-        transcriptBox.innerText = 'NOAH is listening... Speak your answer now.';
 
-        if (!window.voiceEngine) return;
+        if (!window.voiceEngine || !window.voiceEngine.recognition) {
+            transcriptBox.innerText = '[Notice] Voice input is not supported in this browser. Type your answer in the box below.';
+            const textInput = document.getElementById('kioskTextInput');
+            if (textInput) textInput.focus();
+            return;
+        }
+
+        transcriptBox.innerText = 'NOAH is listening... Speak your answer now.';
 
         window.voiceEngine.listen({
             onInterim: (text) => {
