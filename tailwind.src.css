@@ -6,3 +6,270 @@
    explicit means a future file move can't silently drop coverage. */
 @source "./index.html";
 @source "./js/**/*.js";
+
+/* Design tokens — see DESIGN.md. `static` keeps every variable in the
+   output so plain CSS below (and any inline var() use) can rely on them. */
+@theme static {
+    --font-sans: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+    --font-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+    --color-canvas: #FAFAFA;
+    --color-surface: #FFFFFF;
+    --color-sunken: #F4F4F5;
+    --color-ink: #18181B;
+    --color-ink-soft: #27272A;
+    --color-muted: #71717A;
+    --color-line: #E4E4E7;
+    --color-line-strong: #D4D4D8;
+    --color-accent: #C8501B;
+    --color-accent-wash: #FBEEE7;
+    --color-ok: #2F7D4F;
+    --color-ok-wash: #E8F3EC;
+    --color-bad: #B4372E;
+    --color-bad-wash: #F9E9E7;
+
+    --radius-panel: 1.25rem;
+    --radius-frame: 2rem;
+
+    --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+    html {
+        background: var(--color-canvas);
+        -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+        background: var(--color-canvas);
+        color: var(--color-ink);
+        font-family: var(--font-sans);
+        font-size: 0.9375rem;
+        line-height: 1.65;
+        letter-spacing: 0.02em;
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3, h4 {
+        letter-spacing: 0.02em;
+        text-wrap: balance;
+    }
+
+    ::selection {
+        background: var(--color-accent);
+        color: #fff;
+    }
+
+    :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+        outline: 2px solid var(--color-accent);
+        outline-offset: 2px;
+    }
+
+    table {
+        font-variant-numeric: tabular-nums;
+    }
+}
+
+@layer components {
+    /* Small uppercase label used for section eyebrows, table heads, field labels. */
+    .eyebrow {
+        font-size: 0.6875rem;
+        line-height: 1.4;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--color-muted);
+    }
+
+    .num {
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* Buttons: pills, 44px minimum touch target, tactile press. */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        min-height: 2.75rem;
+        padding: 0 1.75rem;
+        border-radius: 9999px;
+        border: 1px solid transparent;
+        font-size: 0.8125rem;
+        letter-spacing: 0.06em;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: transform 0.2s var(--ease-spring), background-color 0.2s ease,
+            border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+    }
+    .btn:active {
+        transform: translateY(1px) scale(0.985);
+    }
+    .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    .btn-primary {
+        background: var(--color-ink);
+        color: var(--color-canvas);
+    }
+    .btn-primary:hover {
+        background: var(--color-ink-soft);
+    }
+    .btn-outline {
+        background: transparent;
+        border-color: var(--color-line-strong);
+        color: var(--color-ink);
+    }
+    .btn-outline:hover {
+        border-color: var(--color-ink);
+    }
+    .btn-danger {
+        background: transparent;
+        border-color: var(--color-line-strong);
+        color: var(--color-bad);
+    }
+    .btn-danger:hover {
+        border-color: var(--color-bad);
+        background: var(--color-bad-wash);
+    }
+    .btn-sm {
+        padding: 0 1.125rem;
+        font-size: 0.75rem;
+    }
+
+    /* Form controls: label above, sunken fill, accent focus ring. */
+    .field {
+        width: 100%;
+        min-height: 2.75rem;
+        padding: 0.625rem 1rem;
+        border-radius: 0.75rem;
+        background: var(--color-sunken);
+        border: 1px solid var(--color-line);
+        color: var(--color-ink);
+        font-size: 0.875rem;
+        transition: border-color 0.2s ease, background-color 0.2s ease;
+    }
+    .field::placeholder {
+        color: #A1A1AA;
+    }
+    .field:hover {
+        border-color: var(--color-line-strong);
+    }
+
+    /* Floating layers (modal, widget) get a soft, zinc-tinted shadow; flat
+       panels stay flat with a hairline instead. */
+    .panel {
+        background: var(--color-surface);
+        border: 1px solid var(--color-line);
+        border-radius: var(--radius-panel);
+    }
+    .float-shadow {
+        box-shadow: 0 24px 60px -28px rgba(24, 24, 27, 0.35);
+    }
+
+    /* Ruled list rows — used instead of stacks of cards. */
+    .rule-row {
+        border-top: 1px solid var(--color-line);
+    }
+
+    .pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.125rem 0.625rem;
+        border-radius: 9999px;
+        font-size: 0.6875rem;
+        letter-spacing: 0.08em;
+        white-space: nowrap;
+        border: 1px solid var(--color-line);
+        background: var(--color-sunken);
+        color: var(--color-muted);
+    }
+    .pill-ok {
+        background: var(--color-ok-wash);
+        border-color: transparent;
+        color: var(--color-ok);
+    }
+    .pill-bad {
+        background: var(--color-bad-wash);
+        border-color: transparent;
+        color: var(--color-bad);
+    }
+    .pill-accent {
+        background: var(--color-accent-wash);
+        border-color: transparent;
+        color: var(--color-accent);
+    }
+
+    /* Header nav link: a 2px signal bar marks the current view. */
+    .nav-link {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        min-height: 2.75rem;
+        padding: 0 0.875rem;
+        font-size: 0.6875rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--color-muted);
+        transition: color 0.2s ease;
+    }
+    .nav-link:hover {
+        color: var(--color-ink);
+    }
+    .nav-link[aria-current="page"] {
+        color: var(--color-ink);
+    }
+    .nav-link::after {
+        content: "";
+        position: absolute;
+        left: 0.875rem;
+        right: 0.875rem;
+        bottom: 0.4rem;
+        height: 2px;
+        background: var(--color-accent);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.35s var(--ease-spring);
+    }
+    .nav-link[aria-current="page"]::after {
+        transform: scaleX(1);
+    }
+}
+
+/* Status mark: a small square that breathes. Transform/opacity only. */
+@keyframes pulseGlow {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+}
+.animate-pulse-glow {
+    animation: pulseGlow 2s infinite ease-in-out;
+}
+
+/* Unlayered on purpose: beats every layered utility (font-bold, <strong>,
+   headings), so nothing anywhere on the site renders bold. */
+*, *::before, *::after {
+    font-weight: 400;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .animate-pulse-glow,
+    .animate-ping {
+        animation: none;
+    }
+    .btn, .nav-link::after {
+        transition: none;
+    }
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-thumb {
+    background: var(--color-line-strong);
+    border-radius: 9999px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}

@@ -44,7 +44,40 @@ class AppController {
         await this.renderSubjectAndPapers();
         await this.renderStaffDashboard();
 
-        if (window.lucide) window.lucide.createIcons();
+        this.setActiveNav(this.currentView);
+        this.revealIn(document.getElementById(`view-${this.currentView}`));
+    }
+
+    // Escapes anything user- or admin-supplied before it is interpolated
+    // into an innerHTML template (names, paper titles, transcripts, topics).
+    esc(value) {
+        return String(value ?? '').replace(/[&<>"']/g, ch => (
+            { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]
+        ));
+    }
+
+    // Staggered spring cascade for everything marked [data-reveal] inside
+    // `root`. Transform/opacity only; skipped entirely under reduced motion
+    // or when Motion failed to load, so content is never left hidden.
+    revealIn(root) {
+        if (!root || !window.Motion || this.prefersReducedMotion()) return;
+        const items = root.querySelectorAll('[data-reveal]');
+        if (!items.length) return;
+        window.Motion.animate(
+            items,
+            { opacity: [0, 1], y: [16, 0] },
+            { type: 'spring', stiffness: 100, damping: 20, delay: window.Motion.stagger(0.07) }
+        );
+    }
+
+    setActiveNav(viewName) {
+        document.querySelectorAll('[data-view-target]').forEach(btn => {
+            if (btn.getAttribute('data-view-target') === viewName) {
+                btn.setAttribute('aria-current', 'page');
+            } else {
+                btn.removeAttribute('aria-current');
+            }
+        });
     }
 
     // Respects the same reduced-motion preference audioVisualizer.js already
@@ -125,6 +158,8 @@ class AppController {
             targetView.classList.remove('hidden');
         }
 
+        this.setActiveNav(viewName);
+        this.revealIn(targetView);
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
         if (viewName === 'landing' && window.audioVisualizer) {
@@ -136,8 +171,6 @@ class AppController {
         } else if (viewName === 'staff-dashboard') {
             await this.renderStaffDashboard();
         }
-
-        if (window.lucide) window.lucide.createIcons();
     }
 
     bindNavigationEvents() {
@@ -205,30 +238,6 @@ class AppController {
 
     // --- Auth UI Management ---
     updateUserAuthHeaderUI() {
-        const currentUser = window.authManager.getCurrentUser();
-        const userBadge = document.getElementById('userAuthBadge');
-        const roleBtn = document.getElementById('switchRoleBtn');
-
-        if (userBadge) {
-            if (window.authManager.isAdmin()) {
-                userBadge.innerHTML = `
-                    <span class="w-2 h-2 rounded-full bg-[var(--muted)]"></span>
-                    <span class="font-bold text-[var(--muted)]">Admin Mode</span>
-                `;
-                userBadge.className = "flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--border)] border border-[var(--border)] text-xs font-mono";
-            } else {
-                userBadge.innerHTML = `
-                    <span class="w-2 h-2 rounded-full bg-[var(--muted)]"></span>
-                    <span>Student: <strong>${currentUser.studentName}</strong> (${currentUser.gradeLevel})</span>
-                `;
-                userBadge.className = "flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--border)] border border-[var(--border)] text-xs text-[var(--muted)] font-mono";
-            }
-        }
-
-        if (roleBtn) {
-            roleBtn.innerText = window.authManager.isAdmin() ? "Switch to Student" : "Admin Login";
-        }
-
         // The floating NOAH widget is student-only — only visible while logged in as a student.
         const widgetContainer = document.getElementById('noahWidgetContainer');
         if (widgetContainer) {
@@ -419,16 +428,16 @@ class AppController {
 
         dropZone.addEventListener('dragover', (e) => {
             e.preventDefault();
-            dropZone.classList.add('border-[var(--border)]', 'bg-[var(--border)]/50');
+            dropZone.classList.add('border-ink!', 'bg-sunken!');
         });
 
         dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('border-[var(--border)]', 'bg-[var(--border)]/50');
+            dropZone.classList.remove('border-ink!', 'bg-sunken!');
         });
 
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
-            dropZone.classList.remove('border-[var(--border)]', 'bg-[var(--border)]/50');
+            dropZone.classList.remove('border-ink!', 'bg-sunken!');
             if (e.dataTransfer.files && e.dataTransfer.files[0]) {
                 this.handleFileSelected(e.dataTransfer.files[0]);
             }
@@ -492,19 +501,16 @@ class AppController {
             
             const qList = document.getElementById('extractedQuestionsList');
             qList.innerHTML = parsedData.questions.map((q, idx) => `
-                <div class="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] space-y-2">
-                    <div class="flex items-center justify-between text-xs font-mono">
-                        <span class="text-[var(--muted)] font-bold">NOAH Question ${idx + 1}:</span>
-                        <span class="px-2 py-0.5 rounded bg-[var(--surface-sunken)] text-[var(--muted)] font-mono text-[10px]">Topic: ${q.topicTag}</span>
+                <div class="rule-row space-y-2 py-4">
+                    <div class="flex items-center justify-between gap-3">
+                        <span class="eyebrow">Question ${idx + 1}</span>
+                        <span class="pill">${this.esc(q.topicTag)}</span>
                     </div>
-                    <p class="text-sm text-[var(--fg)] font-medium">${q.text}</p>
-                    <div class="text-xs text-[var(--muted)] font-mono">
-                        <span>Extracted Keywords: </span><span class="text-[var(--fg)] font-bold">${q.keywords.join(', ')}</span>
-                    </div>
+                    <p class="text-sm">${this.esc(q.text)}</p>
+                    <p class="text-xs text-muted">Keywords: <span class="text-ink-soft">${this.esc(q.keywords.join(', '))}</span></p>
                 </div>
             `).join('');
 
-            if (window.lucide) window.lucide.createIcons();
         } catch (err) {
             console.error('File parse error:', err);
             statusBox.innerText = `Error parsing file: ${err.message}`;
@@ -573,38 +579,33 @@ class AppController {
         if (studentPapersList) {
             if (gradePapers.length === 0) {
                 studentPapersList.innerHTML = `
-                    <div class="p-8 rounded-xl bg-[var(--surface-sunken)] border border-dashed border-[var(--border)] text-center col-span-full">
-                        <h4 class="text-lg font-bold text-[var(--fg)] mb-1">No Active Papers Found for ${userGrade}</h4>
-                        <p class="text-xs text-[var(--muted)]">Log in as Admin to upload a PDF or Photo test paper for ${userGrade}.</p>
+                    <div class="rounded-panel border border-dashed border-line-strong p-8">
+                        <p class="text-base">No active papers for ${this.esc(userGrade)}</p>
+                        <p class="mt-1 text-xs text-muted">An admin can upload a PDF or photo test paper for ${this.esc(userGrade)} from the Admin Dashboard.</p>
                     </div>
                 `;
             } else {
                 studentPapersList.innerHTML = gradePapers.map(paper => `
-                    <div class="glass-card p-6 rounded-xl border border-[var(--border)] hover:border-[var(--border)] transition duration-300 flex flex-col justify-between">
-                        <div>
-                            <div class="flex items-center justify-between mb-3">
-                                <span class="text-xs px-2.5 py-1 rounded bg-[var(--border)] text-[var(--muted)] font-mono border border-[var(--border)] font-bold">${paper.gradeLevel}</span>
-                                <span class="text-xs text-[var(--muted)] font-mono">${paper.questions.length} Oral Questions</span>
-                            </div>
-                            <h4 class="text-xl font-bold text-[var(--fg)] mb-2">${paper.title}</h4>
+                    <div data-reveal class="rule-row grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-6 py-5">
+                        <div class="min-w-0">
+                            <p class="text-lg leading-snug">${this.esc(paper.title)}</p>
+                            <p class="mt-1 text-xs text-muted">${this.esc(paper.gradeLevel)} · ${paper.questions.length} oral questions</p>
                         </div>
-                        <button onclick="app.launchFullKioskExam('${paper.id}')" class="mt-6 w-full btn-ultron py-3 rounded-xl font-bold text-sm">
-                            <span>Start Full-Screen Exam</span>
-                        </button>
+                        <button type="button" data-start-paper="${this.esc(paper.id)}" class="btn btn-primary btn-sm">Start exam</button>
                     </div>
                 `).join('');
             }
+            this.revealIn(studentPapersList);
         }
 
         if (widgetSelect) {
             widgetSelect.innerHTML = `<option value="">-- Choose Test Paper --</option>` + gradePapers.map(p => `
-                <option value="${p.id}">${p.title} (${p.gradeLevel})</option>
+                <option value="${this.esc(p.id)}">${this.esc(p.title)} (${this.esc(p.gradeLevel)})</option>
             `).join('');
         }
 
         await this.renderStudentHistory();
 
-        if (window.lucide) window.lucide.createIcons();
     }
 
     async renderStudentHistory() {
@@ -613,21 +614,22 @@ class AppController {
 
         if (container) {
             if (results.length === 0) {
-                container.innerHTML = `<p class="text-xs text-[var(--muted)] italic">No past oral exam attempts recorded yet.</p>`;
+                container.innerHTML = `<p class="rule-row py-5 text-sm text-muted">No oral exams taken yet.</p>`;
             } else {
                 container.innerHTML = results.map(r => `
-                    <div class="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] flex items-center justify-between">
-                        <div>
-                            <h5 class="text-sm font-bold text-[var(--fg)]">${r.testTitle}</h5>
-                            <span class="text-xs text-[var(--muted)] font-mono">${r.date}</span>
+                    <div data-reveal class="rule-row flex items-start justify-between gap-4 py-4">
+                        <div class="min-w-0">
+                            <p>${this.esc(r.testTitle)}</p>
+                            <p class="num mt-0.5 text-xs text-muted">${this.esc(r.date)}</p>
                         </div>
-                        <div class="text-right">
-                            <span class="text-lg font-black ${r.score >= 60 ? 'text-[var(--success)]' : 'text-[var(--muted)]'}">${r.score}%</span>
-                            <span class="block text-[10px] uppercase font-mono text-[var(--muted)]">${r.status}</span>
+                        <div class="shrink-0 text-right">
+                            <p class="num text-xl ${r.score >= 60 ? 'text-ok' : 'text-muted'}">${this.esc(r.score)}%</p>
+                            <p class="eyebrow">${this.esc(r.status)}</p>
                         </div>
                     </div>
                 `).join('');
             }
+            this.revealIn(container);
         }
     }
 
@@ -760,7 +762,7 @@ class AppController {
         const question = paper.questions[qIndex];
 
         const transcriptBox = document.getElementById('kioskTranscriptBox');
-        transcriptBox.innerHTML = `<span class="text-[var(--accent)] font-bold animate-pulse">[NOAH Core] Evaluating response for conceptual completeness & full explanation...</span><br/><span class="text-[var(--fg)]">${transcript || '[No audible input]'}</span>`;
+        transcriptBox.innerHTML = `<span class="animate-pulse text-accent">[NOAH Core] Evaluating response for conceptual completeness and full explanation...</span><br/><span class="text-ink">${this.esc(transcript || '[No audible input]')}</span>`;
         
         if (window.audioVisualizer) {
             window.audioVisualizer.setMode('listening');
@@ -791,17 +793,18 @@ class AppController {
 
             const feedbackAlert = document.getElementById('kioskFeedbackAlert');
             feedbackAlert.classList.remove('hidden');
-            feedbackAlert.className = `p-4 rounded-xl border mb-4 transition-all ${
-                gradeResult.status === 'correct' ? 'bg-[var(--success)]/10 border-[var(--success)]/30 text-[var(--success)]' :
-                gradeResult.status === 'partially_correct' ? 'bg-[var(--accent)]/10 border-[var(--accent)]/30 text-[var(--accent)]' :
-                'bg-[var(--border)] border-[var(--border)] text-[var(--muted)]'
-            }`;
+            const tone = gradeResult.status === 'correct'
+                ? { box: 'border-ok/30 bg-ok-wash', badge: 'pill pill-ok' }
+                : gradeResult.status === 'partially_correct'
+                    ? { box: 'border-accent/30 bg-accent-wash', badge: 'pill pill-accent' }
+                    : { box: 'border-line bg-sunken', badge: 'pill' };
+            feedbackAlert.className = `rounded-xl border p-4 ${tone.box}`;
             feedbackAlert.innerHTML = `
-                <div class="font-bold flex items-center gap-2 mb-1">
-                    <span>NOAH Verdict:</span>
-                    <span class="uppercase tracking-wider text-xs px-2 py-0.5 rounded font-mono ${ gradeResult.status === 'correct' ? 'bg-[var(--success)]/20 text-[var(--success)] border border-[var(--success)]/30' : gradeResult.status === 'partially_correct' ? 'bg-[var(--accent)]/20 text-[var(--accent)] border border-[var(--accent)]/30' : 'bg-[var(--muted)]/20 text-[var(--muted)] border border-[var(--border)]' }">${gradeResult.status.replace('_', ' ')} (+${gradeResult.score} pts)</span>
-                </div>
-                <p class="text-sm">${gradeResult.feedback}</p>
+                <p class="mb-2 flex flex-wrap items-center gap-2">
+                    <span class="eyebrow">NOAH verdict</span>
+                    <span class="${tone.badge}">${this.esc(gradeResult.status.replace('_', ' '))} · +${this.esc(gradeResult.score)} pts</span>
+                </p>
+                <p class="text-sm text-ink">${this.esc(gradeResult.feedback)}</p>
             `;
 
             if (window.voiceEngine) {
@@ -893,9 +896,7 @@ class AppController {
         document.getElementById('resultPaperTitle').innerText = resultRecord.testTitle;
         document.getElementById('resultScoreDisplay').innerText = `${resultRecord.score}%`;
         document.getElementById('resultStatusBadge').innerText = resultRecord.status;
-        document.getElementById('resultStatusBadge').className = `px-3 py-1 rounded-full text-xs font-mono font-bold ${
-            resultRecord.status === 'Pass' ? 'bg-[var(--success)]/10 text-[var(--success)] border border-[var(--success)]/30' : 'bg-[var(--border)] text-[var(--muted)] border border-[var(--border)]'
-        }`;
+        document.getElementById('resultStatusBadge').className = `pill ${resultRecord.status === 'Pass' ? 'pill-ok' : 'pill-bad'}`;
 
         document.getElementById('resultCorrectCount').innerText = correctCount;
         document.getElementById('resultPartialCount').innerText = partialCount;
@@ -903,11 +904,9 @@ class AppController {
 
         const topicContainer = document.getElementById('resultStrugglingTopics');
         if (resultRecord.strugglingTopics.length > 0) {
-            topicContainer.innerHTML = resultRecord.strugglingTopics.map(t => `
-                <span class="px-3 py-1 rounded-lg bg-[var(--border)] border border-[var(--border)] text-[var(--muted)] text-xs font-mono">${t}</span>
-            `).join('');
+            topicContainer.innerHTML = resultRecord.strugglingTopics.map(t => `<span class="pill">${this.esc(t)}</span>`).join('');
         } else {
-            topicContainer.innerHTML = `<span class="text-xs text-[var(--success)] font-mono">None! Exceptional mastery across all question topics.</span>`;
+            topicContainer.innerHTML = `<span class="text-sm text-ok">None. Strong mastery across every question.</span>`;
         }
 
         document.getElementById('resultPronunciationNote').innerText = resultRecord.pronunciationNote;
@@ -921,6 +920,14 @@ class AppController {
     }
 
     bindExamEvents() {
+        const papersList = document.getElementById('studentAssignedPapersList');
+        if (papersList) {
+            papersList.addEventListener('click', (e) => {
+                const btn = e.target.closest('[data-start-paper]');
+                if (btn) this.launchFullKioskExam(btn.dataset.startPaper);
+            });
+        }
+
         const kioskMicSpeakBtn = document.getElementById('kioskMicSpeakBtn');
         const kioskSubmitTextBtn = document.getElementById('kioskSubmitTextBtn');
         const exitKioskBtn = document.getElementById('exitKioskBtn');
@@ -966,7 +973,7 @@ class AppController {
 
         const totalTests = results.length;
         const avgScore = totalTests > 0 ? Math.round(results.reduce((acc, r) => acc + r.score, 0) / totalTests) : 0;
-        const flaggedCount = results.filter(r => r.pronunciationNote.includes('FLAGGED') || r.status === 'Needs Review').length;
+        const flaggedCount = results.filter(r => (r.pronunciationNote || '').includes('FLAGGED') || r.status === 'Needs Review').length;
 
         document.getElementById('kpiTotalTests').innerText = totalTests;
         document.getElementById('kpiAvgScore').innerText = `${avgScore}%`;
@@ -979,26 +986,18 @@ class AppController {
             if (papers.length === 0) {
                 papersTbody.innerHTML = `
                     <tr>
-                        <td colspan="6" class="py-8 text-center text-[var(--muted)] italic text-sm">
-                            No test papers yet. Upload one above to get started.
-                        </td>
+                        <td colspan="6" class="py-10 text-center text-sm text-muted">No test papers yet. Upload one above to get started.</td>
                     </tr>
                 `;
             } else {
                 papersTbody.innerHTML = papers.map(p => `
-                    <tr class="border-b border-[var(--border)] hover:bg-[var(--surface-sunken)] transition">
-                        <td class="py-3 px-4 font-semibold text-[var(--fg)]">${p.title}</td>
-                        <td class="py-3 px-4 text-sm text-[var(--fg)]">${subjectsById[p.subjectId] || '—'}</td>
-                        <td class="py-3 px-4 text-xs text-[var(--muted)] font-mono">${p.gradeLevel}</td>
-                        <td class="py-3 px-4 text-xs text-[var(--muted)]">${p.questions.length}</td>
-                        <td class="py-3 px-4">
-                            <span class="px-2.5 py-1 rounded-full text-xs font-mono ${ p.active ? 'bg-[var(--success)]/10 text-[var(--success)] border border-[var(--success)]/30' : 'bg-[var(--border)] text-[var(--muted)] border border-[var(--border)]' }">${p.active ? 'Active' : 'Inactive'}</span>
-                        </td>
-                        <td class="py-3 px-4 text-right">
-                            <button data-delete-paper="${p.id}" class="px-3 py-1.5 rounded-lg bg-[var(--border)] hover:bg-[var(--border)] border border-[var(--border)] text-[var(--muted)] text-xs font-semibold transition">
-                                Remove
-                            </button>
-                        </td>
+                    <tr class="border-b border-line transition hover:bg-sunken">
+                        <td class="py-4 pr-4">${this.esc(p.title)}</td>
+                        <td class="py-4 pr-4 text-muted">${this.esc(subjectsById[p.subjectId] || '—')}</td>
+                        <td class="py-4 pr-4 text-muted">${this.esc(p.gradeLevel)}</td>
+                        <td class="num py-4 pr-4 text-muted">${p.questions.length}</td>
+                        <td class="py-4 pr-4"><span class="pill ${p.active ? 'pill-ok' : ''}">${p.active ? 'Active' : 'Inactive'}</span></td>
+                        <td class="py-2 text-right"><button type="button" data-delete-paper="${this.esc(p.id)}" class="btn btn-danger btn-sm">Remove</button></td>
                     </tr>
                 `).join('');
             }
@@ -1009,25 +1008,23 @@ class AppController {
             if (results.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="7" class="py-8 text-center text-[var(--muted)] italic text-sm">
-                            No student oral test submissions recorded yet. Upload a PDF or Photo test paper above to start!
-                        </td>
+                        <td colspan="7" class="py-10 text-center text-sm text-muted">No student submissions yet.</td>
                     </tr>
                 `;
             } else {
-                tbody.innerHTML = results.map(r => `
-                    <tr class="border-b border-[var(--border)] hover:bg-[var(--surface-sunken)] transition">
-                        <td class="py-3 px-4 font-semibold text-[var(--fg)]">${r.studentName} <span class="block text-xs font-normal text-[var(--muted)]">${r.studentId} (${r.gradeLevel})</span></td>
-                        <td class="py-3 px-4 text-sm text-[var(--fg)]">${r.testTitle}</td>
-                        <td class="py-3 px-4 text-xs text-[var(--muted)] font-mono">${r.date}</td>
-                        <td class="py-3 px-4 font-bold ${r.score >= 80 ? 'text-[var(--success)]' : r.score >= 60 ? 'text-[var(--accent)]' : 'text-[var(--muted)]'}">${r.score}%</td>
-                        <td class="py-3 px-4">
-                            <span class="px-2.5 py-1 rounded-full text-xs font-mono ${ r.status === 'Pass' ? 'bg-[var(--success)]/10 text-[var(--success)] border border-[var(--success)]/30' : 'bg-[var(--border)] text-[var(--muted)] border border-[var(--border)]' }">${r.status}</span>
-                        </td>
-                        <td class="py-3 px-4 text-xs text-[var(--muted)]">${r.strugglingTopics.join(', ') || 'None'}</td>
-                        <td class="py-3 px-4 text-xs ${r.pronunciationNote.includes('FLAGGED') ? 'text-[var(--muted)] font-bold' : 'text-[var(--muted)]'}">${r.pronunciationNote}</td>
-                    </tr>
-                `).join('');
+                tbody.innerHTML = results.map(r => {
+                    const note = r.pronunciationNote || '';
+                    return `
+                    <tr class="border-b border-line transition hover:bg-sunken">
+                        <td class="whitespace-nowrap py-4 pr-4">${this.esc(r.studentName)}<span class="block text-xs text-muted">${this.esc(r.studentId)} · ${this.esc(r.gradeLevel)}</span></td>
+                        <td class="py-4 pr-4">${this.esc(r.testTitle)}</td>
+                        <td class="num py-4 pr-4 text-muted">${this.esc(r.date)}</td>
+                        <td class="num py-4 pr-4 ${r.score >= 80 ? 'text-ok' : r.score >= 60 ? 'text-ink' : 'text-muted'}">${this.esc(r.score)}%</td>
+                        <td class="py-4 pr-4"><span class="pill ${r.status === 'Pass' ? 'pill-ok' : 'pill-bad'}">${this.esc(r.status)}</span></td>
+                        <td class="py-4 pr-4 text-xs text-muted">${this.esc(r.strugglingTopics.join(', ') || 'None')}</td>
+                        <td class="py-4 text-xs ${note.includes('FLAGGED') ? 'text-bad' : 'text-muted'}">${this.esc(note)}</td>
+                    </tr>`;
+                }).join('');
             }
         }
     }

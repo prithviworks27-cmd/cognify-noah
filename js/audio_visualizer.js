@@ -1,13 +1,11 @@
 /**
  * Cognify - NOAH Ultron 3D Particle Swarm Audio Visualizer
- * Powered by Three.js, InstancedMesh, and UnrealBloomPass
+ * Powered by Three.js and InstancedMesh. Renders dark particles on the light
+ * page (no bloom pass — glow only works against a dark ground).
  */
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 
 class UltronParticleCore {
     constructor() {
@@ -47,15 +45,6 @@ class UltronParticleCore {
         this._closestPoint = new THREE.Vector3();
         this._pushVec = new THREE.Vector3();
 
-        // The canvas is full-page/ambient again rather than confined to a
-        // right-hand column, but NOAH should still read as "present on the
-        // right" — so the swarm's own center is offset in world space
-        // (baked into each particle's target, not the mesh transform, so the
-        // cursor raycast — which compares world-space ray against these same
-        // local-as-world positions — stays correctly aligned with what's
-        // visually under the pointer).
-        this.centerOffsetX = 0;
-
         this.initThree();
         this.initSwarm();
         this.bindPointerEvents();
@@ -92,7 +81,7 @@ class UltronParticleCore {
 
         // 1. Scene & Camera
         this.scene = new THREE.Scene();
-        this.scene.fog = new THREE.FogExp2(0x080808, 0.008);
+        this.scene.fog = new THREE.FogExp2(0xffffff, 0.0015);
 
         this.camera = new THREE.PerspectiveCamera(this._fovForAspect(width / height), width / height, 0.1, 2000);
         // Pulled back further than the original boxed layout (was 95) — the
@@ -100,7 +89,6 @@ class UltronParticleCore {
         // ambient presence with room to breathe, not a shape that dominates
         // the frame and crowds the text.
         this.camera.position.set(0, 0, 140);
-        this._updateCenterOffset();
 
         // 2. Renderer
         this.renderer = new THREE.WebGLRenderer({
@@ -115,29 +103,10 @@ class UltronParticleCore {
         // 3. OrbitControls
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
         this.controls.enableDamping = true;
-        // Deliberately off: this orbits the CAMERA around the world origin,
-        // but the sphere itself sits off-center at (centerOffsetX, 0, 0) — a
-        // different point — so over time it would drag the sphere's on-screen
-        // position around instead of keeping it fixed on the right. The
-        // sphere's own spin (in the per-particle target math) already makes
-        // it feel alive without moving where it sits on screen.
+        // Deliberately off: the sphere's own spin (in the per-particle target
+        // math) already makes it feel alive without the camera orbiting.
         this.controls.autoRotate = false;
         this.controls.enableZoom = false;
-
-        // 4. Post Processing (UnrealBloomPass)
-        this.composer = new EffectComposer(this.renderer);
-        this.composer.addPass(new RenderPass(this.scene, this.camera));
-
-        this.bloomPass = new UnrealBloomPass(
-            new THREE.Vector2(width, height),
-            1.8,  // strength
-            0.4,  // radius
-            0.85  // threshold
-        );
-        this.bloomPass.strength = 1.6;
-        this.bloomPass.radius = 0.4;
-        this.bloomPass.threshold = 0.05;
-        this.composer.addPass(this.bloomPass);
 
         this.clock = new THREE.Clock();
     }
@@ -148,7 +117,7 @@ class UltronParticleCore {
         this.target = new THREE.Vector3();
 
         // Instance Mesh Tetrahedron Geometry
-        this.geometry = new THREE.TetrahedronGeometry(0.22);
+        this.geometry = new THREE.TetrahedronGeometry(0.5);
         this.material = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
         this.instancedMesh = new THREE.InstancedMesh(this.geometry, this.material, this.COUNT);
@@ -170,13 +139,13 @@ class UltronParticleCore {
         for (let i = this.DUST_START; i < this.COUNT; i++) {
             let bx, by, bz, tries = 0;
             do {
-                bx = (Math.random() - 0.5) * 300;
+                bx = (Math.random() - 0.5) * 190;
                 by = (Math.random() - 0.5) * 140;
                 bz = (Math.random() - 0.5) * 120;
                 tries++;
             } while (
                 tries < 20 &&
-                Math.hypot(bx - this.centerOffsetX, by, bz) < sphereExclusionRadius
+                Math.hypot(bx, by, bz) < sphereExclusionRadius
             );
             this.dustBase.push(new THREE.Vector3(bx, by, bz));
             this.dustSeed.push(Math.random() * Math.PI * 2);
@@ -209,18 +178,15 @@ class UltronParticleCore {
             this.params.targetScale = 54;
             this.params.targetChaos = 1.3;
             this.params.targetRotation = 1.4;
-            this.bloomPass.strength = 2.4;
         } else if (mode === 'listening') {
             this.params.targetScale = 48;
             this.params.targetChaos = 1.0;
             this.params.targetRotation = 1.8;
-            this.bloomPass.strength = 2.0;
         } else {
             // Idle state
             this.params.targetScale = 45;
             this.params.targetChaos = 0.6;
             this.params.targetRotation = 0.8;
-            this.bloomPass.strength = 1.6;
         }
     }
 
@@ -231,10 +197,9 @@ class UltronParticleCore {
             if (onComplete) onComplete();
             return;
         }
-        this.params.targetScale = 90;
+        this.params.targetScale = 70;
         this.params.targetChaos = 2.2;
         this.params.targetRotation = 3.2;
-        this.bloomPass.strength = 3.5;
 
         setTimeout(() => {
             this.setMode('idle');
@@ -290,7 +255,7 @@ class UltronParticleCore {
                     base.z + Math.sin(time * 0.1 + seed * 2) * 4
                 );
                 // Dim, quiet grey — background texture, not the main figure.
-                this.color.setHSL(0.06, 0.04, 0.32 + 0.08 * Math.sin(time * 0.5 + seed));
+                this.color.setHSL(0.06, 0.04, 0.66 + 0.06 * Math.sin(time * 0.5 + seed));
             } else {
                 // NOAH's neural core — a Fibonacci-lattice shell that breathes,
                 // ripples with a signal wave, and turns as a rigid body, ported
@@ -328,25 +293,18 @@ class UltronParticleCore {
                 const rx = px * ca - pz * sa;
                 const rz = px * sa + pz * ca;
 
-                this.target.set(rx + this.centerOffsetX, py, rz);
+                this.target.set(rx, py, rz);
 
-                // Color Palette Modulation — monochrome white/grey at rest, the
-                // single orange accent (#FF6901, hue ~0.065) only asserts itself
-                // while NOAH is actively speaking, matching the "orange used
-                // sparingly for critical moments" rule from the design system.
-                // (A wide firing-driven hue swing was tried here — swinging
-                // blue-to-warm at high saturation — but combined with bloom it
-                // read as a muddy multi-color haze rather than a clean glow.)
+                // Dark ink on the light panel at rest; the single accent orange
+                // (#C8501B, hue ~0.047) only asserts itself while NOAH is
+                // speaking — accent marks what is live, nothing else.
                 const pulse = 0.5 + 0.5 * Math.sin(time * 4 + theta * 3);
                 if (this.mode === 'listening') {
-                    const light = 0.55 + pulse * 0.2;
-                    this.color.setHSL(0.07, 0.2, light);
+                    this.color.setHSL(0.07, 0.25, 0.08 + pulse * 0.14);
                 } else if (this.mode === 'speaking') {
-                    const light = 0.45 + pulse * 0.25;
-                    this.color.setHSL(0.065, 0.85, light);
+                    this.color.setHSL(0.047, 0.76, 0.42 + pulse * 0.08);
                 } else {
-                    const light = 0.55 + pulse * 0.2;
-                    this.color.setHSL(0.06, 0.06, light);
+                    this.color.setHSL(0.06, 0.05, 0.05 + pulse * 0.1);
                 }
             }
 
@@ -384,7 +342,7 @@ class UltronParticleCore {
             this.instancedMesh.instanceColor.needsUpdate = true;
         }
 
-        this.composer.render();
+        this.renderer.render(this.scene, this.camera);
     }
 
     _smoothstep(edge0, edge1, x) {
@@ -409,35 +367,6 @@ class UltronParticleCore {
         return THREE.MathUtils.radToDeg(halfFovRad) * 2;
     }
 
-    // How far right of dead-center the swarm sits, in world units, at the
-    // camera's current fov/aspect. Anchored to the visible edge minus the
-    // sphere's own radius (plus a margin), not a raw fraction of the visible
-    // width — a fraction pushed the sphere far enough that its far edge went
-    // past the frame boundary and got clipped. Anchoring to the edge instead
-    // guarantees the whole sphere stays in frame at any window size while
-    // still sitting as far right as it safely can.
-    _updateCenterOffset() {
-        // Only the full-page landing background is biased right — the exam
-        // kiosk's own small bounded viewport should stay centered in itself.
-        if (!this.container || this.container.id !== 'ultronCanvasContainer') {
-            this.centerOffsetX = 0;
-            return;
-        }
-        // OrbitControls' autoRotate continuously orbits the camera around the
-        // origin, so .position.z alone isn't a stable "distance" (it drifts
-        // toward 0 and even negative as the camera swings around) — the true,
-        // rotation-independent distance is the camera's radial length.
-        const distance = this.camera.position.length();
-        const halfFovRad = THREE.MathUtils.degToRad(this.camera.fov) / 2;
-        const halfHeightWorld = distance * Math.tan(halfFovRad);
-        const halfWidthWorld = halfHeightWorld * this.camera.aspect;
-
-        // Sphere radius at its largest breathing extent (outer = scale * up to
-        // 1.045), plus a margin so it never touches the very edge.
-        const sphereRadius = this.params.targetScale * 1.05;
-        const margin = 15;
-        this.centerOffsetX = Math.max(0, halfWidthWorld - sphereRadius - margin);
-    }
 
     onWindowResize() {
         if (!this.container || !this.renderer || !this.camera) return;
@@ -448,10 +377,7 @@ class UltronParticleCore {
         this.camera.fov = this._fovForAspect(aspect);
         this.camera.aspect = aspect;
         this.camera.updateProjectionMatrix();
-        this._updateCenterOffset();
-
         this.renderer.setSize(width, height);
-        this.composer.setSize(width, height);
     }
 }
 
