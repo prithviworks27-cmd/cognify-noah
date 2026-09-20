@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from app.database import Base, engine
-from app.routers import auth, papers, results
+from app.routers import attempts, auth, papers, results
 
 Base.metadata.create_all(bind=engine)
 
@@ -12,6 +12,7 @@ app = FastAPI(title="Cognify NOAH API")
 
 app.include_router(auth.router)
 app.include_router(papers.router)
+app.include_router(attempts.router)
 app.include_router(results.router)
 
 

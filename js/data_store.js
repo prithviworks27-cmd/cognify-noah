@@ -43,7 +43,9 @@ class DataStore {
             } catch (e) {
                 // response wasn't JSON — keep the status text
             }
-            throw new Error(message);
+            const error = new Error(message);
+            error.status = res.status;
+            throw error;
         }
         if (res.status === 204) return null;
         return res.json();
@@ -76,15 +78,26 @@ class DataStore {
         return this._fetch(`/papers/${id}`, { method: 'DELETE' });
     }
 
-    // Grading happens server-side — the rubric never has to reach the browser.
-    gradeAnswer(paperId, questionIndex, transcript) {
-        return this._fetch(`/papers/${paperId}/questions/${questionIndex}/grade`, {
+    // --- Exam attempts ---
+    // The server owns the whole exam: it grades each answer against a rubric
+    // the browser never sees, stores those grades, and builds the final
+    // result from them. The client only reports transcripts.
+    startAttempt(paperId) {
+        return this._fetch('/attempts', { method: 'POST', body: JSON.stringify({ paperId }) });
+    }
+
+    gradeAnswer(attemptId, questionIndex, transcript, retryCount) {
+        return this._fetch(`/attempts/${attemptId}/questions/${questionIndex}/grade`, {
             method: 'POST',
-            body: JSON.stringify({ transcript })
+            body: JSON.stringify({ transcript, retryCount })
         });
     }
 
-    // --- Student Test Results ---
+    finishAttempt(attemptId) {
+        return this._fetch(`/attempts/${attemptId}/finish`, { method: 'POST' });
+    }
+
+    // --- Student Test Results (read-only) ---
     getResults() {
         return this._fetch('/results');
     }
@@ -93,9 +106,6 @@ class DataStore {
         return this._fetch('/results/mine');
     }
 
-    saveResult(result) {
-        return this._fetch('/results', { method: 'POST', body: JSON.stringify(result) });
-    }
 }
 
 window.dataStore = new DataStore();

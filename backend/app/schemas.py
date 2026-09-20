@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 
 # ---- Auth ----
@@ -44,10 +44,6 @@ class QuestionIn(BaseModel):
     topicTag: str = "General Knowledge"
 
 
-class GradeRequest(BaseModel):
-    transcript: str
-
-
 class GradeResult(BaseModel):
     status: str
     score: int
@@ -84,20 +80,6 @@ class PaperOut(BaseModel):
 
 # ---- Results ----
 
-class ResultCreate(BaseModel):
-    subjectId: str | None = None
-    testTitle: str
-    date: str
-    score: int
-    maxScore: int = 100
-    correctCount: int = 0
-    partialCount: int = 0
-    wrongCount: int = 0
-    strugglingTopics: list[str] = []
-    pronunciationNote: str | None = None
-    status: str
-
-
 class ResultOut(BaseModel):
     id: str
     studentId: str
@@ -117,3 +99,21 @@ class ResultOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# ---- Exam attempts ----
+
+class AttemptStart(BaseModel):
+    paperId: str
+
+
+class AttemptOut(BaseModel):
+    attemptId: str
+    questionCount: int
+
+
+class AttemptGradeRequest(BaseModel):
+    # Capped so a single request can't push an arbitrarily large prompt at the
+    # grader (LLM cost) — a spoken answer is nowhere near this long.
+    transcript: str = Field(max_length=4000)
+    retryCount: int = Field(default=0, ge=0, le=10)

@@ -16,7 +16,7 @@ class AppController {
             gradeLevel: '',
             selectedPaper: null,
             currentQuestionIndex: 0,
-            answers: [],
+            attemptId: null,
             retriesForCurrentQ: 0,
             maxRetries: 2,
             startTime: null
@@ -643,6 +643,14 @@ class AppController {
             return;
         }
 
+        let attempt;
+        try {
+            attempt = await window.dataStore.startAttempt(paperId);
+        } catch (err) {
+            alert(err.message || 'Could not start this exam. Please try again.');
+            return;
+        }
+
         const currentUser = window.authManager.getCurrentUser();
         this.examSession = {
             active: true,
@@ -650,8 +658,8 @@ class AppController {
             studentId: currentUser.studentId || 'STU-5001',
             gradeLevel: currentUser.gradeLevel || 'Class 5',
             selectedPaper: paper,
+            attemptId: attempt.attemptId,
             currentQuestionIndex: 0,
-            answers: [],
             retriesForCurrentQ: 0,
             maxRetries: 2,
             startTime: new Date()
@@ -707,6 +715,9 @@ class AppController {
     }
 
     triggerKioskOralCapture() {
+        // A cancelled utterance still fires its "done" callback, so an exit
+        // while NOAH is speaking would otherwise restart the mic afterwards.
+        if (!this.examSession.active) return;
         const transcriptBox = document.getElementById('kioskTranscriptBox');
 
         if (!window.voiceEngine || !window.voiceEngine.recognition) {
@@ -751,16 +762,13 @@ class AppController {
         } else {
             const msg = "Max audio retries reached. Moving to fallback evaluation.";
             document.getElementById('kioskTranscriptBox').innerText = msg;
-            this.processKioskAnswer("", true);
+            this.processKioskAnswer("");
         }
     }
 
     // --- PROCESS ANSWER WITH 2.5-SECOND DELIBERATE EVALUATION PAUSE ---
-    processKioskAnswer(transcript, isAudioFlagged = false) {
-        const paper = this.examSession.selectedPaper;
+    processKioskAnswer(transcript) {
         const qIndex = this.examSession.currentQuestionIndex;
-        const question = paper.questions[qIndex];
-
         const transcriptBox = document.getElementById('kioskTranscriptBox');
         transcriptBox.innerHTML = `<span class="animate-pulse text-accent">[NOAH Core] Evaluating response for conceptual completeness and full explanation...</span><br/><span class="text-ink">${this.esc(transcript || '[No audible input]')}</span>`;
         
@@ -769,27 +777,30 @@ class AppController {
         }
 
         setTimeout(async () => {
+            if (!this.examSession.active) return;
             let gradeResult;
             try {
-                gradeResult = await window.dataStore.gradeAnswer(paper.id, qIndex, transcript);
+                gradeResult = await window.dataStore.gradeAnswer(
+                    this.examSession.attemptId, qIndex, transcript, this.examSession.retriesForCurrentQ
+                );
             } catch (err) {
-                gradeResult = {
-                    status: 'incorrect',
-                    score: 0,
-                    maxScore: question.points || 10,
-                    feedback: 'NOAH could not reach the grading service. This answer was marked incorrect — please continue.',
-                    topicTag: question.topicTag || 'General Knowledge'
-                };
+                // Nothing is graded locally: the server never recorded this
+                // answer, so it can't be skipped or scored here.
+                if (err.status === 409) {
+                    // Server already has this answer (the earlier response was lost).
+                    this.advanceKioskQuestion();
+                } else if (err.status === 401 || err.status === 403 || err.status === 404) {
+                    this.closeKioskOverlay();
+                    alert(err.message || 'Your exam session is no longer valid. Please log in and start again.');
+                } else {
+                    const msg = 'NOAH could not reach the grading service. Please answer this question again.';
+                    transcriptBox.innerText = `[Notice] ${msg}`;
+                    const askAgain = () => setTimeout(() => this.deliverKioskQuestion(), 800);
+                    if (window.voiceEngine) window.voiceEngine.speak(msg, askAgain); else askAgain();
+                }
+                return;
             }
-
-            this.examSession.answers.push({
-                questionId: question.id,
-                questionText: question.text,
-                transcript: transcript || '[No audible response detected]',
-                gradeResult,
-                retryCount: this.examSession.retriesForCurrentQ,
-                isAudioFlagged: isAudioFlagged || this.examSession.retriesForCurrentQ > 1
-            });
+            if (!this.examSession.active) return;
 
             const feedbackAlert = document.getElementById('kioskFeedbackAlert');
             feedbackAlert.classList.remove('hidden');
@@ -818,6 +829,7 @@ class AppController {
     }
 
     advanceKioskQuestion() {
+        if (!this.examSession.active) return;
         const paper = this.examSession.selectedPaper;
         if (this.examSession.currentQuestionIndex + 1 < paper.questions.length) {
             this.examSession.currentQuestionIndex++;
@@ -827,66 +839,33 @@ class AppController {
         }
     }
 
-    async finishKioskExamSession() {
-        this.examSession.active = false;
-        if (window.voiceEngine) window.voiceEngine.stopListening();
-
-        let totalScore = 0;
-        let maxScore = 0;
-        let correctCount = 0;
-        let partialCount = 0;
-        let wrongCount = 0;
-        const strugglingTopics = new Set();
-        let totalRetries = 0;
-
-        this.examSession.answers.forEach(ans => {
-            totalScore += ans.gradeResult.score;
-            maxScore += ans.gradeResult.maxScore;
-            totalRetries += ans.retryCount;
-
-            if (ans.gradeResult.status === 'correct') correctCount++;
-            else if (ans.gradeResult.status === 'partially_correct') {
-                partialCount++;
-                strugglingTopics.add(ans.gradeResult.topicTag);
-            } else {
-                wrongCount++;
-                strugglingTopics.add(ans.gradeResult.topicTag);
-            }
-        });
-
-        const finalScorePct = Math.round((totalScore / Math.max(maxScore, 1)) * 100);
-
-        let pronunciationNote = "Vocal clarity and pacing within expected parameters.";
-        if (totalRetries >= 3) {
-            pronunciationNote = "FLAGGED: Low audio clarity / multiple retries triggered during spoken responses.";
-        } else if (totalRetries >= 1) {
-            pronunciationNote = "Soft clarity note: Slight background noise or soft enunciation detected.";
-        }
-
-        const resultRecord = {
-            id: 'res-' + Date.now(),
-            studentId: this.examSession.studentId,
-            studentName: this.examSession.studentName,
-            gradeLevel: this.examSession.gradeLevel,
-            subjectId: this.examSession.selectedPaper.subjectId,
-            testTitle: this.examSession.selectedPaper.title,
-            date: new Date().toISOString().slice(0, 16).replace('T', ' '),
-            score: finalScorePct,
-            maxScore: 100,
-            correctCount,
-            partialCount,
-            wrongCount,
-            strugglingTopics: Array.from(strugglingTopics),
-            pronunciationNote,
-            status: finalScorePct >= 60 ? 'Pass' : 'Needs Review'
-        };
-
-        await window.dataStore.saveResult(resultRecord);
-
+    closeKioskOverlay() {
         document.getElementById('noahFullScreenKiosk').classList.add('hidden');
         if (window.audioVisualizer) {
             window.audioVisualizer.moveToContainer('ultronCanvasContainer');
         }
+        if (window.voiceEngine) {
+            window.voiceEngine.stopListening();
+            window.voiceEngine.stopSpeaking();
+        }
+    }
+
+    async finishKioskExamSession() {
+        this.examSession.active = false;
+        if (window.voiceEngine) window.voiceEngine.stopListening();
+
+        // The score, counts, topics and clarity note are all computed by the
+        // server from the answers it graded — nothing here is self-reported.
+        let resultRecord;
+        try {
+            resultRecord = await window.dataStore.finishAttempt(this.examSession.attemptId);
+        } catch (err) {
+            this.closeKioskOverlay();
+            alert(err.message || 'Could not save your result. Please try again.');
+            return;
+        }
+
+        this.closeKioskOverlay();
 
         await this.switchView('student-kiosk');
         document.getElementById('studentDetailStep').classList.add('hidden');
@@ -898,9 +877,9 @@ class AppController {
         document.getElementById('resultStatusBadge').innerText = resultRecord.status;
         document.getElementById('resultStatusBadge').className = `pill ${resultRecord.status === 'Pass' ? 'pill-ok' : 'pill-bad'}`;
 
-        document.getElementById('resultCorrectCount').innerText = correctCount;
-        document.getElementById('resultPartialCount').innerText = partialCount;
-        document.getElementById('resultWrongCount').innerText = wrongCount;
+        document.getElementById('resultCorrectCount').innerText = resultRecord.correctCount;
+        document.getElementById('resultPartialCount').innerText = resultRecord.partialCount;
+        document.getElementById('resultWrongCount').innerText = resultRecord.wrongCount;
 
         const topicContainer = document.getElementById('resultStrugglingTopics');
         if (resultRecord.strugglingTopics.length > 0) {
@@ -950,14 +929,8 @@ class AppController {
         if (exitKioskBtn) {
             exitKioskBtn.addEventListener('click', () => {
                 if (confirm("Are you sure you want to exit the oral examination? Progress will be cancelled.")) {
-                    document.getElementById('noahFullScreenKiosk').classList.add('hidden');
-                    if (window.audioVisualizer) {
-                        window.audioVisualizer.moveToContainer('ultronCanvasContainer');
-                    }
-                    if (window.voiceEngine) {
-                        window.voiceEngine.stopListening();
-                        window.voiceEngine.stopSpeaking();
-                    }
+                    this.examSession.active = false;
+                    this.closeKioskOverlay();
                 }
             });
         }

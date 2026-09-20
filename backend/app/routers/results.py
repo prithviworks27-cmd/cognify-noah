@@ -4,12 +4,16 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.deps import require_admin, require_student, Principal
 from app.models import Result, User
-from app.schemas import ResultCreate, ResultOut
+from app.schemas import ResultOut
 
 router = APIRouter(prefix="/api/results", tags=["results"])
 
+# Results are read-only over the API on purpose. The only way one comes into
+# existence is routers/attempts.py finishing an attempt, which computes it from
+# answers the server itself graded — a client can never submit its own score.
 
-def _to_out(r: Result) -> ResultOut:
+
+def to_out(r: Result) -> ResultOut:
     return ResultOut(
         id=r.id,
         studentId=r.student_id,
@@ -32,7 +36,7 @@ def _to_out(r: Result) -> ResultOut:
 @router.get("", response_model=list[ResultOut])
 def list_all_results(db: Session = Depends(get_db), _: Principal = Depends(require_admin)):
     results = db.query(Result).order_by(Result.created_at.desc()).all()
-    return [_to_out(r) for r in results]
+    return [to_out(r) for r in results]
 
 
 @router.get("/mine", response_model=list[ResultOut])
@@ -43,29 +47,5 @@ def list_my_results(db: Session = Depends(get_db), student: User = Depends(requi
         .order_by(Result.created_at.desc())
         .all()
     )
-    return [_to_out(r) for r in results]
+    return [to_out(r) for r in results]
 
-
-@router.post("", response_model=ResultOut)
-def create_result(payload: ResultCreate, db: Session = Depends(get_db), student: User = Depends(require_student)):
-    result = Result(
-        student_user_id=student.id,
-        student_id=student.student_id,
-        student_name=student.student_name,
-        grade_level=student.grade_level,
-        subject_id=payload.subjectId,
-        test_title=payload.testTitle,
-        date=payload.date,
-        score=payload.score,
-        max_score=payload.maxScore,
-        correct_count=payload.correctCount,
-        partial_count=payload.partialCount,
-        wrong_count=payload.wrongCount,
-        struggling_topics=payload.strugglingTopics,
-        pronunciation_note=payload.pronunciationNote,
-        status=payload.status,
-    )
-    db.add(result)
-    db.commit()
-    db.refresh(result)
-    return _to_out(result)

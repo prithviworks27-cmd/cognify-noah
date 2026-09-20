@@ -2,16 +2,15 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.deps import get_current_principal, require_admin, require_student, Principal
-from app.grading import evaluate_answer, evaluate_answer_llm
-from app.models import TestPaper, User
-from app.schemas import GradeRequest, GradeResult, PaperCreate, PaperOut
+from app.deps import get_current_principal, require_admin, Principal
+from app.models import TestPaper
+from app.schemas import PaperCreate, PaperOut
 
 router = APIRouter(prefix="/api/papers", tags=["papers"])
 
 # Fields a student's own browser is allowed to see. acceptedAnswers/keywords
 # are the answer key — grading happens server-side precisely so those never
-# have to be sent to the student taking the test.
+# have to be sent to the student taking the test (grading lives in routers/attempts.py).
 STUDENT_SAFE_QUESTION_FIELDS = ("text", "points", "topicTag")
 
 
@@ -87,22 +86,3 @@ def delete_paper(paper_id: str, db: Session = Depends(get_db), _: Principal = De
     db.delete(paper)
     db.commit()
 
-
-@router.post("/{paper_id}/questions/{question_index}/grade", response_model=GradeResult)
-def grade_question(
-    paper_id: str,
-    question_index: int,
-    payload: GradeRequest,
-    db: Session = Depends(get_db),
-    _student: User = Depends(require_student),
-):
-    paper = db.get(TestPaper, paper_id)
-    if not paper:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Paper not found")
-    if question_index < 0 or question_index >= len(paper.questions):
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Question index out of range")
-
-    # The rubric is read server-side from the DB — never trust a client-supplied one.
-    question = paper.questions[question_index]
-    result = evaluate_answer_llm(question, payload.transcript) or evaluate_answer(question, payload.transcript)
-    return GradeResult(**result)
