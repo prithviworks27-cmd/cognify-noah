@@ -15,6 +15,18 @@ app.include_router(papers.router)
 app.include_router(results.router)
 
 
+@app.middleware("http")
+async def revalidate_static_files(request, call_next):
+    # StaticFiles sends ETag/Last-Modified but no Cache-Control, so browsers
+    # heuristically cache index.html/styles.css/js for a while and keep
+    # serving stale copies after an edit. no-cache makes them revalidate
+    # every time (a cheap 304 when nothing changed).
+    response = await call_next(request)
+    if not request.url.path.startswith("/api"):
+        response.headers["Cache-Control"] = "no-cache"
+    return response
+
+
 @app.get("/api/health")
 def health():
     return {"status": "ok"}
