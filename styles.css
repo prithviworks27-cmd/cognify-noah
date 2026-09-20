@@ -22,6 +22,12 @@
     --destructive: #FB2C36;
 }
 
+/* Everything is regular weight — no bold anywhere, whatever utility class
+   (font-bold, font-semibold, <strong>, headings) a template reaches for. */
+*, *::before, *::after {
+    font-weight: 400;
+}
+
 body {
     font-family: 'Geist Mono', ui-monospace, monospace;
     background-color: var(--bg);
