@@ -33,11 +33,13 @@ body {
     background-color: var(--bg);
     color: var(--fg);
     overflow-x: hidden;
+    letter-spacing: 0.03em;
+    line-height: 1.7;
 }
 
 h1, h2, h3, h4 {
     font-family: 'Geist Mono', ui-monospace, monospace;
-    letter-spacing: -0.02em;
+    letter-spacing: 0.02em;
 }
 
 code, .font-mono {
