@@ -242,7 +242,6 @@ class AppController {
         const studentLoginForm = document.getElementById('studentLoginForm');
         const studentSignupForm = document.getElementById('studentSignupForm');
         const adminLoginForm = document.getElementById('adminLoginForm');
-        const toggleAuthModeBtn = document.getElementById('toggleAuthModeBtn');
         const showStudentSignupBtn = document.getElementById('showStudentSignupBtn');
         const showStudentLoginBtn = document.getElementById('showStudentLoginBtn');
 
@@ -272,19 +271,6 @@ class AppController {
 
         if (showStudentLoginBtn) {
             showStudentLoginBtn.addEventListener('click', () => this.showAuthForm('student-login'));
-        }
-
-        if (toggleAuthModeBtn) {
-            toggleAuthModeBtn.addEventListener('click', () => {
-                const isAdminFormVisible = !adminLoginForm.classList.contains('hidden');
-                if (isAdminFormVisible) {
-                    this.showAuthForm('student-login');
-                    toggleAuthModeBtn.innerText = "Need Admin Access? Sign in as Admin";
-                } else {
-                    this.showAuthForm('admin');
-                    toggleAuthModeBtn.innerText = "Sign in as Student instead";
-                }
-            });
         }
 
         if (studentLoginForm) {
@@ -372,16 +358,13 @@ class AppController {
     openAuthModal(defaultMode = 'student') {
         const authModal = document.getElementById('authModal');
         const panel = document.getElementById('authModalPanel');
-        const toggleAuthModeBtn = document.getElementById('toggleAuthModeBtn');
 
         this.lastFocusedBeforeModal = document.activeElement;
         authModal.classList.remove('hidden');
         if (defaultMode === 'admin') {
             this.showAuthForm('admin');
-            toggleAuthModeBtn.innerText = "Sign in as Student instead";
         } else {
             this.showAuthForm('student-login');
-            toggleAuthModeBtn.innerText = "Need Admin Access? Sign in as Admin";
         }
 
         this.motionAnimate(authModal, { opacity: [0, 1] }, { duration: 0.2, ease: 'easeOut' });
