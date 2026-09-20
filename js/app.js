@@ -8,19 +8,8 @@ class AppController {
         this.currentView = 'landing';
         this.widgetOpen = false;
         
-        // Student Exam Session State
-        this.examSession = {
-            active: false,
-            studentName: '',
-            studentId: '',
-            gradeLevel: '',
-            selectedPaper: null,
-            currentQuestionIndex: 0,
-            attemptId: null,
-            retriesForCurrentQ: 0,
-            maxRetries: 2,
-            startTime: null
-        };
+        // Student exam session state (see newExamSession)
+        this.examSession = this.newExamSession();
 
         this.pendingParsedPaper = null;
 
@@ -633,41 +622,93 @@ class AppController {
         }
     }
 
-    // --- FULL-SCREEN NOAH PARTICLE KIOSK ENGINE ---
+    // --- FULL-SCREEN NOAH EXAM KIOSK ---
+    // Each question moves through these phases:
+    //   asking      NOAH reads the question aloud (Next is disabled)
+    //   answering   a fixed 60s window: the mic stays open across pauses and
+    //               the student can speak, type, or press Next question
+    //   grading     the answer goes to the server; NOAH reads the verdict
+    //   submitting  Submit test was pressed: unanswered questions are graded blank
+    // examSession.token changes whenever the exam moves on (or ends), so any
+    // timer or speech callback left over from an earlier step can tell it is stale.
+
+    static get ANSWER_WINDOW_MS() { return 60000; }
+
+    newExamSession(overrides = {}) {
+        return {
+            active: false,
+            phase: 'idle',
+            token: 0,
+            studentName: '',
+            studentId: '',
+            gradeLevel: '',
+            selectedPaper: null,
+            attemptId: null,
+            currentQuestionIndex: 0,
+            graded: new Set(),
+            spoken: '',
+            pendingAnswer: '',
+            micProblems: 0,
+            answerEndsAt: 0,
+            tickId: null,
+            fullscreenRequired: false,
+            ...overrides
+        };
+    }
+
+    // Must be called synchronously from the click that starts the exam —
+    // browsers only allow full screen from a user gesture.
+    requestExamFullscreen() {
+        const el = document.documentElement;
+        const request = el.requestFullscreen || el.webkitRequestFullscreen;
+        if (!request) return Promise.resolve(false);
+        try {
+            return Promise.resolve(request.call(el)).then(() => true, () => false);
+        } catch (e) {
+            return Promise.resolve(false);
+        }
+    }
+
+    leaveExamFullscreen() {
+        const exit = document.exitFullscreen || document.webkitExitFullscreen;
+        if ((document.fullscreenElement || document.webkitFullscreenElement) && exit) {
+            try { Promise.resolve(exit.call(document)).catch(() => {}); } catch (e) { /* already out */ }
+        }
+    }
+
+    showFullscreenGate(show) {
+        document.getElementById('kioskFullscreenGate').classList.toggle('hidden', !show);
+        if (show) document.getElementById('kioskReturnFullscreenBtn').focus();
+    }
+
     async launchFullKioskExam(paperId) {
-        let paper;
+        // First thing, before any await, so it still counts as the click's gesture.
+        const fullscreenPromise = this.requestExamFullscreen();
+
+        let paper, attempt;
         try {
             paper = await window.dataStore.getTestPaperById(paperId);
-        } catch (err) {
-            alert('Paper not found.');
-            return;
-        }
-
-        let attempt;
-        try {
             attempt = await window.dataStore.startAttempt(paperId);
         } catch (err) {
+            this.leaveExamFullscreen();
             alert(err.message || 'Could not start this exam. Please try again.');
             return;
         }
+        const gotFullscreen = await fullscreenPromise;
 
         const currentUser = window.authManager.getCurrentUser();
-        this.examSession = {
+        this.examSession = this.newExamSession({
             active: true,
+            phase: 'asking',
             studentName: currentUser.studentName || 'Student',
             studentId: currentUser.studentId || 'STU-5001',
             gradeLevel: currentUser.gradeLevel || 'Class 5',
             selectedPaper: paper,
             attemptId: attempt.attemptId,
-            currentQuestionIndex: 0,
-            retriesForCurrentQ: 0,
-            maxRetries: 2,
-            startTime: new Date()
-        };
+            fullscreenRequired: gotFullscreen
+        });
 
-        const kioskOverlay = document.getElementById('noahFullScreenKiosk');
-        kioskOverlay.classList.remove('hidden');
-
+        document.getElementById('noahFullScreenKiosk').classList.remove('hidden');
         if (window.audioVisualizer) {
             window.audioVisualizer.moveToContainer('fullKioskParticleContainer');
         }
@@ -675,11 +716,56 @@ class AppController {
         this.deliverKioskQuestion();
     }
 
+    clearAnswerTimers() {
+        const s = this.examSession;
+        if (s.tickId) {
+            clearInterval(s.tickId);
+            s.tickId = null;
+        }
+    }
+
+    formatClock(ms) {
+        const total = Math.ceil(ms / 1000);
+        return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
+    }
+
+    setTimerDisplay(remainingMs) {
+        const timer = document.getElementById('kioskTimer');
+        const bar = document.getElementById('kioskTimerBar');
+        const low = remainingMs <= 10000 && remainingMs < AppController.ANSWER_WINDOW_MS;
+        timer.innerText = this.formatClock(remainingMs);
+        timer.classList.toggle('text-accent', low);
+        timer.classList.toggle('text-muted', !low);
+        bar.classList.toggle('bg-accent', low);
+        bar.classList.toggle('bg-ink', !low);
+        bar.style.transform = `scaleX(${Math.max(0, Math.min(1, remainingMs / AppController.ANSWER_WINDOW_MS))})`;
+    }
+
+    setMicNotice(text, showRetry = false) {
+        const notice = document.getElementById('kioskMicNotice');
+        notice.classList.toggle('hidden', !text);
+        document.getElementById('kioskMicNoticeText').innerText = text || '';
+        document.getElementById('kioskMicSpeakBtn').classList.toggle('hidden', !showRetry);
+    }
+
+    setAnswerControls({ next, typing }) {
+        document.getElementById('kioskNextBtn').disabled = !next;
+        document.getElementById('kioskTextInput').disabled = !typing;
+    }
+
     deliverKioskQuestion() {
-        const paper = this.examSession.selectedPaper;
-        const qIndex = this.examSession.currentQuestionIndex;
+        const s = this.examSession;
+        const paper = s.selectedPaper;
+        const qIndex = s.currentQuestionIndex;
         const question = paper.questions[qIndex];
-        this.examSession.retriesForCurrentQ = 0;
+        const token = ++s.token;
+        const isLast = qIndex + 1 === paper.questions.length;
+
+        s.phase = 'asking';
+        s.spoken = '';
+        s.pendingAnswer = '';
+        s.micProblems = 0;
+        this.clearAnswerTimers();
 
         document.getElementById('kioskPaperTitle').innerText = paper.title;
         document.getElementById('kioskQuestionCounter').innerText = `Question ${qIndex + 1} of ${paper.questions.length}`;
@@ -689,23 +775,26 @@ class AppController {
         this.motionAnimate(document.getElementById('kioskProgressBar'), { scaleX: pct }, { duration: 0.4, ease: 'easeOut' });
 
         document.getElementById('kioskQuestionText').innerText = question.text;
-        document.getElementById('kioskTranscriptBox').innerText = 'Awaiting your spoken response...';
+        document.getElementById('kioskTranscriptBox').innerText = 'NOAH is asking...';
         document.getElementById('kioskFeedbackAlert').classList.add('hidden');
+        document.getElementById('kioskTextInput').value = '';
+        document.getElementById('kioskNextBtn').innerText = isLast ? 'Finish test' : 'Next question';
+        this.setMicNotice('');
+        this.setTimerDisplay(AppController.ANSWER_WINDOW_MS);
+        this.setAnswerControls({ next: false, typing: false });
 
-        if (!window.voiceEngine) return;
+        const voice = window.voiceEngine;
+        const begin = () => setTimeout(() => this.startAnswerWindow(token), 400);
+        if (!voice) {
+            begin();
+            return;
+        }
 
-        const askQuestion = () => {
-            window.voiceEngine.speak(question.text, () => {
-                setTimeout(() => this.triggerKioskOralCapture(), 600);
-            });
-        };
-
+        const askQuestion = () => voice.speak(question.text, begin);
         // Said once, before the first question, on browsers with no
-        // SpeechRecognition (Safari, Firefox) — otherwise the student never
-        // finds out why the mic never works, since triggerKioskOralCapture()
-        // would silently misreport every attempt as an ordinary audio retry.
-        if (qIndex === 0 && !window.voiceEngine.recognition) {
-            window.voiceEngine.speak(
+        // SpeechRecognition (Safari, Firefox) so the student knows to type.
+        if (qIndex === 0 && !voice.recognition) {
+            voice.speak(
                 "Notice. Voice input is not supported in this browser. Please type each answer in the box provided.",
                 askQuestion
             );
@@ -714,81 +803,98 @@ class AppController {
         }
     }
 
-    triggerKioskOralCapture() {
-        // A cancelled utterance still fires its "done" callback, so an exit
-        // while NOAH is speaking would otherwise restart the mic afterwards.
-        if (!this.examSession.active) return;
-        const transcriptBox = document.getElementById('kioskTranscriptBox');
+    startAnswerWindow(token) {
+        const s = this.examSession;
+        if (!s.active || token !== s.token || s.phase !== 'asking') return;
 
-        if (!window.voiceEngine || !window.voiceEngine.recognition) {
-            transcriptBox.innerText = '[Notice] Voice input is not supported in this browser. Type your answer in the box below.';
-            const textInput = document.getElementById('kioskTextInput');
-            if (textInput) textInput.focus();
-            return;
+        s.phase = 'answering';
+        s.answerEndsAt = Date.now() + AppController.ANSWER_WINDOW_MS;
+        this.setAnswerControls({ next: true, typing: true });
+        this.setTimerDisplay(AppController.ANSWER_WINDOW_MS);
+
+        s.tickId = setInterval(() => {
+            if (!s.active || token !== s.token || s.phase !== 'answering') return;
+            const remaining = s.answerEndsAt - Date.now();
+            this.setTimerDisplay(Math.max(0, remaining));
+            if (remaining <= 0) this.endAnswerWindow('timeout');
+        }, 250);
+
+        if (window.voiceEngine && window.voiceEngine.recognition) {
+            this.startMic(token);
+        } else {
+            document.getElementById('kioskTranscriptBox').innerText = 'Type your answer below.';
+            this.setMicNotice('Voice input is not supported in this browser. Type your answer in the box below.');
+            document.getElementById('kioskTextInput').focus();
         }
+    }
 
-        transcriptBox.innerText = 'NOAH is listening... Speak your answer now.';
+    startMic(token) {
+        const s = this.examSession;
+        const box = document.getElementById('kioskTranscriptBox');
+        this.setMicNotice('');
+        box.innerText = 'Listening... speak your answer now.';
 
-        window.voiceEngine.listen({
+        window.voiceEngine.startCapture({
             onInterim: (text) => {
-                transcriptBox.innerText = `[Listening...] ${text}`;
+                if (token !== s.token) return;
+                s.spoken = text;
+                box.innerText = text || 'Listening... speak your answer now.';
             },
-            onResult: (finalText) => {
-                transcriptBox.innerText = finalText;
-                this.processKioskAnswer(finalText);
-            },
-            onNoSpeech: () => {
-                this.handleKioskAudioRetry();
-            },
-            onError: (err) => {
-                console.warn('Speech error:', err);
-                this.handleKioskAudioRetry();
+            onProblem: (kind, message) => {
+                if (token !== s.token) return;
+                s.micProblems++;
+                if (kind === 'network') return;
+                this.setMicNotice(message, true);
             }
         });
     }
 
-    handleKioskAudioRetry() {
-        this.examSession.retriesForCurrentQ++;
+    // Ends the current answer window — because the 60s ran out or the student
+    // pressed Next — then sends whatever they said or typed for grading.
+    async endAnswerWindow() {
+        const s = this.examSession;
+        if (!s.active || s.phase !== 'answering') return;
+        s.phase = 'grading';
+        const token = s.token;
+        this.clearAnswerTimers();
+        this.setAnswerControls({ next: false, typing: false });
+        this.setMicNotice('');
 
-        if (this.examSession.retriesForCurrentQ <= this.examSession.maxRetries) {
-            const retryMsg = "The answer was not audible properly, please narrate it again.";
-            document.getElementById('kioskTranscriptBox').innerText = `[Notice] ${retryMsg} (Attempt ${this.examSession.retriesForCurrentQ}/${this.examSession.maxRetries})`;
+        const voice = window.voiceEngine;
+        const heard = voice ? await voice.finishCapture() : '';
+        if (!s.active || token !== s.token) return;
 
-            if (window.voiceEngine) {
-                window.voiceEngine.speak(retryMsg, () => {
-                    setTimeout(() => this.triggerKioskOralCapture(), 500);
-                });
-            }
-        } else {
-            const msg = "Max audio retries reached. Moving to fallback evaluation.";
-            document.getElementById('kioskTranscriptBox').innerText = msg;
-            this.processKioskAnswer("");
-        }
+        // Typed text is a deliberate edit, so it wins over the live transcript.
+        const typed = document.getElementById('kioskTextInput').value.trim();
+        this.gradeKioskAnswer(token, typed || (heard || s.spoken || '').trim());
     }
 
-    // --- PROCESS ANSWER WITH 2.5-SECOND DELIBERATE EVALUATION PAUSE ---
-    processKioskAnswer(transcript) {
-        const qIndex = this.examSession.currentQuestionIndex;
+    // The 2.5s "evaluating" pause is deliberate UX pacing, not processing time.
+    gradeKioskAnswer(token, transcript) {
+        const s = this.examSession;
+        const qIndex = s.currentQuestionIndex;
+        s.pendingAnswer = transcript;
+
         const transcriptBox = document.getElementById('kioskTranscriptBox');
-        transcriptBox.innerHTML = `<span class="animate-pulse text-accent">[NOAH Core] Evaluating response for conceptual completeness and full explanation...</span><br/><span class="text-ink">${this.esc(transcript || '[No audible input]')}</span>`;
-        
+        transcriptBox.innerHTML = `<span class="animate-pulse text-accent">[NOAH Core] Evaluating response for conceptual completeness and full explanation...</span><br/><span class="text-ink">${this.esc(transcript || '[No answer given]')}</span>`;
+
         if (window.audioVisualizer) {
             window.audioVisualizer.setMode('listening');
         }
 
         setTimeout(async () => {
-            if (!this.examSession.active) return;
+            if (!s.active || token !== s.token) return;
             let gradeResult;
             try {
-                gradeResult = await window.dataStore.gradeAnswer(
-                    this.examSession.attemptId, qIndex, transcript, this.examSession.retriesForCurrentQ
-                );
+                gradeResult = await window.dataStore.gradeAnswer(s.attemptId, qIndex, transcript, s.micProblems);
             } catch (err) {
-                // Nothing is graded locally: the server never recorded this
-                // answer, so it can't be skipped or scored here.
+                if (!s.active || token !== s.token) return;
+                // Nothing is graded locally: if the server never recorded this
+                // answer it can't be skipped or scored here.
                 if (err.status === 409) {
-                    // Server already has this answer (the earlier response was lost).
-                    this.advanceKioskQuestion();
+                    // The server already has this answer (an earlier response was lost).
+                    s.graded.add(qIndex);
+                    this.advanceKioskQuestion(token);
                 } else if (err.status === 401 || err.status === 403 || err.status === 404) {
                     this.closeKioskOverlay();
                     alert(err.message || 'Your exam session is no longer valid. Please log in and start again.');
@@ -800,7 +906,8 @@ class AppController {
                 }
                 return;
             }
-            if (!this.examSession.active) return;
+            if (!s.active || token !== s.token) return;
+            s.graded.add(qIndex);
 
             const feedbackAlert = document.getElementById('kioskFeedbackAlert');
             feedbackAlert.classList.remove('hidden');
@@ -820,27 +927,120 @@ class AppController {
 
             if (window.voiceEngine) {
                 window.voiceEngine.speak(gradeResult.feedback, () => {
-                    setTimeout(() => this.advanceKioskQuestion(), 1500);
+                    setTimeout(() => this.advanceKioskQuestion(token), 1500);
                 });
             } else {
-                setTimeout(() => this.advanceKioskQuestion(), 2500);
+                setTimeout(() => this.advanceKioskQuestion(token), 2500);
             }
         }, 2500);
     }
 
-    advanceKioskQuestion() {
-        if (!this.examSession.active) return;
-        const paper = this.examSession.selectedPaper;
-        if (this.examSession.currentQuestionIndex + 1 < paper.questions.length) {
-            this.examSession.currentQuestionIndex++;
+    advanceKioskQuestion(token) {
+        const s = this.examSession;
+        if (!s.active || token !== s.token) return;
+        const paper = s.selectedPaper;
+        if (s.currentQuestionIndex + 1 < paper.questions.length) {
+            s.currentQuestionIndex++;
             this.deliverKioskQuestion();
         } else {
             this.finishKioskExamSession();
         }
     }
 
+    // A small dialog inside the exam screen (native confirm()/alert() can knock
+    // the browser out of full screen). Buttons: [{ label, primary, onClick }].
+    showKioskDialog(heading, text, buttons) {
+        document.getElementById('kioskConfirmHeading').innerText = heading;
+        document.getElementById('kioskConfirmText').innerText = text;
+        const row = document.getElementById('kioskConfirmButtons');
+        row.innerHTML = '';
+        buttons.forEach(({ label, primary, onClick }) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = `btn ${primary ? 'btn-primary' : 'btn-outline'}`;
+            btn.innerText = label;
+            btn.addEventListener('click', onClick);
+            row.appendChild(btn);
+        });
+        document.getElementById('kioskSubmitConfirm').classList.remove('hidden');
+        const first = row.querySelector('button');
+        if (first) first.focus();
+    }
+
+    hideKioskDialog() {
+        document.getElementById('kioskSubmitConfirm').classList.add('hidden');
+    }
+
+    confirmSubmitTest() {
+        const s = this.examSession;
+        if (!s.active || s.phase === 'submitting' || s.phase === 'finishing') return;
+        this.showKioskDialog(
+            'Submit your test?',
+            'Questions you have not answered will be marked incorrect. You cannot change your answers afterwards.',
+            [
+                { label: 'Keep answering', onClick: () => this.hideKioskDialog() },
+                { label: 'Submit test', primary: true, onClick: () => this.submitTestEarly() }
+            ]
+        );
+    }
+
+    // Submit test: send the current answer, mark every question that has no
+    // grade yet as blank (so the server sees a complete attempt), then finish.
+    async submitTestEarly() {
+        const s = this.examSession;
+        if (!s.active || s.phase === 'submitting' || s.phase === 'finishing') return;
+        const prevPhase = s.phase;
+        s.phase = 'submitting';
+        s.token++;
+        this.clearAnswerTimers();
+        this.showKioskDialog('Submitting your test...', 'Marking your answers. Please wait.', []);
+
+        const voice = window.voiceEngine;
+        if (prevPhase === 'answering') {
+            const heard = voice ? await voice.finishCapture() : '';
+            const typed = document.getElementById('kioskTextInput').value.trim();
+            s.pendingAnswer = typed || (heard || s.spoken || '').trim();
+        } else if (voice) {
+            voice.cancelCapture();
+            voice.stopSpeaking();
+        }
+
+        const paper = s.selectedPaper;
+        for (let i = 0; i < paper.questions.length; i++) {
+            if (s.graded.has(i)) continue;
+            const text = i === s.currentQuestionIndex ? s.pendingAnswer : '';
+            try {
+                await window.dataStore.gradeAnswer(s.attemptId, i, text, i === s.currentQuestionIndex ? s.micProblems : 0);
+                s.graded.add(i);
+            } catch (err) {
+                if (err.status === 409) {
+                    s.graded.add(i);
+                    continue;
+                }
+                s.phase = 'submit-failed';
+                this.showKioskDialog(
+                    'Could not submit yet',
+                    err.message || 'Check your connection and try again. Your answers are kept.',
+                    [{ label: 'Try again', primary: true, onClick: () => this.submitTestEarly() }]
+                );
+                return;
+            }
+        }
+        await this.finishKioskExamSession();
+    }
+
+    // Tears the exam screen down: back to the landing canvas, mic and voice
+    // off, out of full screen.
     closeKioskOverlay() {
+        const s = this.examSession;
+        s.active = false;
+        s.fullscreenRequired = false;
+        s.token++;
+        this.clearAnswerTimers();
+
         document.getElementById('noahFullScreenKiosk').classList.add('hidden');
+        this.hideKioskDialog();
+        this.showFullscreenGate(false);
         if (window.audioVisualizer) {
             window.audioVisualizer.moveToContainer('ultronCanvasContainer');
         }
@@ -848,20 +1048,28 @@ class AppController {
             window.voiceEngine.stopListening();
             window.voiceEngine.stopSpeaking();
         }
+        this.leaveExamFullscreen();
     }
 
     async finishKioskExamSession() {
-        this.examSession.active = false;
-        if (window.voiceEngine) window.voiceEngine.stopListening();
+        const s = this.examSession;
+        s.phase = 'finishing';
+        s.token++;
+        this.clearAnswerTimers();
+        if (window.voiceEngine) window.voiceEngine.cancelCapture();
 
         // The score, counts, topics and clarity note are all computed by the
         // server from the answers it graded — nothing here is self-reported.
         let resultRecord;
         try {
-            resultRecord = await window.dataStore.finishAttempt(this.examSession.attemptId);
+            resultRecord = await window.dataStore.finishAttempt(s.attemptId);
         } catch (err) {
-            this.closeKioskOverlay();
-            alert(err.message || 'Could not save your result. Please try again.');
+            // Stay in the exam so the result isn't lost; every answer is already saved.
+            this.showKioskDialog(
+                'Could not save your result',
+                err.message || 'Check your connection and try again. Your answers are saved.',
+                [{ label: 'Try again', primary: true, onClick: () => this.finishKioskExamSession() }]
+            );
             return;
         }
 
@@ -907,33 +1115,40 @@ class AppController {
             });
         }
 
-        const kioskMicSpeakBtn = document.getElementById('kioskMicSpeakBtn');
-        const kioskSubmitTextBtn = document.getElementById('kioskSubmitTextBtn');
-        const exitKioskBtn = document.getElementById('exitKioskBtn');
+        document.getElementById('kioskNextBtn').addEventListener('click', () => this.endAnswerWindow());
+        document.getElementById('submitTestBtn').addEventListener('click', () => this.confirmSubmitTest());
+        document.getElementById('kioskTextInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.endAnswerWindow();
+            }
+        });
+        document.getElementById('kioskMicSpeakBtn').addEventListener('click', () => {
+            const s = this.examSession;
+            if (s.active && s.phase === 'answering' && window.voiceEngine && window.voiceEngine.recognition) {
+                this.startMic(s.token);
+            }
+        });
 
-        if (kioskMicSpeakBtn) {
-            kioskMicSpeakBtn.addEventListener('click', () => {
-                this.triggerKioskOralCapture();
-            });
-        }
+        // Browsers always let the user press Esc to leave full screen, so it
+        // can't be blocked — instead, leaving it mid-test covers the exam
+        // with a gate until they go back in (the timer keeps running).
+        const onFullscreenChange = () => {
+            const inFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement);
+            const s = this.examSession;
+            this.showFullscreenGate(s.active && s.fullscreenRequired && !inFullscreen);
+        };
+        document.addEventListener('fullscreenchange', onFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+        document.getElementById('kioskReturnFullscreenBtn').addEventListener('click', () => this.requestExamFullscreen());
 
-        if (kioskSubmitTextBtn) {
-            kioskSubmitTextBtn.addEventListener('click', () => {
-                const val = document.getElementById('kioskTextInput').value.trim();
-                if (!val) return;
-                this.processKioskAnswer(val);
-                document.getElementById('kioskTextInput').value = '';
-            });
-        }
-
-        if (exitKioskBtn) {
-            exitKioskBtn.addEventListener('click', () => {
-                if (confirm("Are you sure you want to exit the oral examination? Progress will be cancelled.")) {
-                    this.examSession.active = false;
-                    this.closeKioskOverlay();
-                }
-            });
-        }
+        // Refreshing or closing the tab mid-test would abandon the attempt.
+        window.addEventListener('beforeunload', (e) => {
+            if (this.examSession.active) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
     }
 
     // --- Staff Admin Dashboard Rendering ---

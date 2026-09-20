@@ -315,7 +315,7 @@
                     <h3 id="kioskPaperTitle" class="truncate text-base">Oral Exam</h3>
                     <p id="kioskQuestionCounter" class="eyebrow">Question 1 of 1</p>
                 </div>
-                <button type="button" id="exitKioskBtn" class="btn btn-outline btn-sm shrink-0">Exit exam</button>
+                <button type="button" id="submitTestBtn" class="btn btn-outline btn-sm shrink-0">Submit test</button>
             </div>
         </div>
 
@@ -333,20 +333,46 @@
                 <div id="kioskFeedbackAlert" class="hidden"></div>
 
                 <div>
-                    <label id="kioskTranscriptLabel" class="eyebrow mb-2 block">Your answer, transcribed live</label>
+                    <div class="mb-2 flex items-baseline justify-between gap-4">
+                        <label id="kioskTranscriptLabel" class="eyebrow">Your answer, transcribed live</label>
+                        <span id="kioskTimer" role="timer" class="num text-sm text-muted">1:00</span>
+                    </div>
+                    <div class="mb-3 h-0.5 w-full overflow-hidden bg-line">
+                        <div id="kioskTimerBar" class="h-full w-full origin-left bg-ink" style="transform: scaleX(1)"></div>
+                    </div>
                     <div id="kioskTranscriptBox" role="status" aria-live="polite" aria-labelledby="kioskTranscriptLabel" class="min-h-24 rounded-xl border border-line bg-sunken p-4 text-sm leading-relaxed text-muted">
-                        Awaiting your spoken response...
+                        NOAH is asking...
+                    </div>
+                    <div id="kioskMicNotice" class="mt-3 hidden flex flex-wrap items-center gap-3 text-xs text-muted">
+                        <span id="kioskMicNoticeText"></span>
+                        <button type="button" id="kioskMicSpeakBtn" class="btn btn-outline btn-sm">Turn microphone on</button>
                     </div>
                 </div>
 
                 <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
-                    <button type="button" id="kioskMicSpeakBtn" class="btn btn-primary shrink-0">Tap to speak</button>
-                    <div class="flex min-w-0 flex-1 items-center gap-2">
+                    <button type="button" id="kioskNextBtn" class="btn btn-primary shrink-0" disabled>Next question</button>
+                    <div class="flex min-w-0 flex-1 items-center">
                         <label for="kioskTextInput" class="sr-only">Type your answer</label>
-                        <input type="text" id="kioskTextInput" placeholder="Or type your answer..." class="field">
-                        <button type="button" id="kioskSubmitTextBtn" class="btn btn-outline shrink-0">Submit</button>
+                        <input type="text" id="kioskTextInput" placeholder="Or type your answer..." class="field" autocomplete="off">
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- The test must stay full screen: leaving it (e.g. with Esc) drops this over the exam. -->
+        <div id="kioskFullscreenGate" class="fixed inset-0 z-[60] hidden flex items-center justify-center bg-canvas/95 p-6 backdrop-blur" role="alertdialog" aria-modal="true" aria-labelledby="kioskGateHeading">
+            <div class="max-w-sm text-center">
+                <h3 id="kioskGateHeading" class="text-xl">Your test is still running</h3>
+                <p class="mt-3 text-sm text-muted">The test has to stay in full screen. Return to full screen to keep answering. The timer has not stopped.</p>
+                <button type="button" id="kioskReturnFullscreenBtn" class="btn btn-primary mt-7">Return to full screen</button>
+            </div>
+        </div>
+
+        <div id="kioskSubmitConfirm" class="fixed inset-0 z-[60] hidden flex items-center justify-center bg-canvas/80 p-4 backdrop-blur-md" role="alertdialog" aria-modal="true" aria-labelledby="kioskConfirmHeading">
+            <div class="panel float-shadow w-full max-w-sm rounded-[1.75rem] p-8 text-center">
+                <h3 id="kioskConfirmHeading" class="text-xl">Submit your test?</h3>
+                <p id="kioskConfirmText" class="mt-3 text-sm text-muted">Questions you have not answered will be marked incorrect. You cannot change your answers afterwards.</p>
+                <div id="kioskConfirmButtons" class="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-center"></div>
             </div>
         </div>
     </div>
