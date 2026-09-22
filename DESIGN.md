@@ -1,21 +1,22 @@
-# Design System: Cognify NOAH — The Quiet Examiner
+# Design System: Cognify NOAH — Retro Blueprint
 
 ## 1. Visual Theme & Atmosphere
-A clinical, gallery-airy examination room set in a single monospace voice. Off-white paper, charcoal ink, hairline
-structure, and one restrained burnt-orange signal that only ever marks what is *live*: the active view, keyboard focus,
-NOAH listening or speaking, exam progress. Layouts are asymmetric and every element owns its own clear zone — the
-particle intelligence lives in a framed panel beside the copy, never behind or under it.
+A neobrutalist-retro exam terminal: heavy black display type stamped onto warm parchment ruled like graph paper, one
+restrained burnt-orange signal that only ever marks what is *live* (the active view, keyboard focus, NOAH listening or
+speaking, exam progress), and the same asymmetric, no-overlap layout as before — the particle intelligence lives in a
+framed panel beside the copy, never behind or under it. Everything but the canvas and the two typefaces is unchanged
+from the system's original "Quiet Examiner" pass: same components, same spacing, same layout rules.
 
 - **Density:** 4 — "Daily App Balanced". Generous gutters on the landing and portal; the admin dashboard tightens to ruled rows.
 - **Variance:** 7 — offset two-column splits, ruled lists instead of card grids.
 - **Motion:** 6 — spring-physics reveals and quiet ambient loops; nothing decorative.
 
 ## 2. Color Palette & Roles
-Zinc neutrals throughout (no warm/cool drift) with a single accent. Light theme only.
+Warm parchment neutrals with a single accent. Light theme only.
 
-- **Canvas Paper** (#FAFAFA, deepening to #EFEFF1) — page background: a quiet top-to-bottom gradient (white at the
-  header, settling to Canvas Paper, deepest at the footer) plus a 4.5%-opacity grain layer, so the canvas reads as
-  material rather than flat CSS white. Never a hue shift — the gradient stays inside the zinc family.
+- **Canvas Parchment** (#F4EEE1) — page background: a two-tier ruled grid in ink at low opacity (a fine 16px sheet
+  under a bolder 96px sheet), fixed to the viewport, reading as graph paper / blueprint rather than flat CSS white.
+  Static — no gradient blur, nothing animates.
 - **Pure Surface** (#FFFFFF) — panels, modal, dropdowns
 - **Sunken Wash** (#F4F4F5) — inputs, transcript well, table hover
 - **Charcoal Ink** (#18181B) — primary text, primary button fill (Zinc-900 depth, never pure black)
@@ -28,13 +29,22 @@ Zinc neutrals throughout (no warm/cool drift) with a single accent. Light theme 
   and are semantic, never decorative.
 
 ## 3. Typography Rules
-- **One family: Geist Mono**, regular weight only. Hierarchy comes from size, case, tracking and color — never from weight.
-- **Display (NOAH):** `clamp(4.5rem, 15vw, 9.5rem)`, tracking `0.04em`, uppercase.
-- **Headings:** `clamp(1.5rem, 3vw, 2rem)` for page titles, `1.125rem` for section titles.
+- **Two families.** Display: **Archivo Black** — a single heavy-weight cut (no lighter variant exists to fall back to),
+  used only for `h1`/`h2`/`h3`/`h4` that aren't also `.eyebrow` labels, so headline punch comes from the typeface
+  itself, not from `font-weight`. Body/UI/mono: **Space Mono**, regular weight only, everywhere else — buttons, labels,
+  inputs, tables, numbers. Hierarchy in body text still comes from size, case, tracking and color, never weight.
+- **Display (NOAH):** `clamp(4.5rem, 13vw, 7rem)`, tracking normal, uppercase — capped low enough to clear the
+  particle panel in the two-column landing split (see §5); the split itself starts at `lg` (1024px), not `md`, because
+  below that the column is too narrow for "NOAH" at any size in this typeface.
+- **Headings:** `clamp(1.5rem, 3vw, 2rem)` for page titles, `1.125rem` for section titles — same sizes as before, new
+  typeface.
 - **Body:** `0.9375rem` (15px), line-height 1.65, letter-spacing `0.02em`, `max-width: 65ch` for prose.
-- **Micro labels:** `0.6875rem`, uppercase, tracking `0.14em`, Muted Steel.
-- **Numbers** (scores, KPIs, dates) use `tabular-nums` so columns align.
-- **Banned:** Inter, serifs, bold/black weights, gradient text.
+- **Micro labels:** `0.6875rem`, uppercase, tracking `0.14em`, Muted Steel — stays in Space Mono even inside an `h3`
+  (that's what the `.eyebrow` exclusion on the display-font rule is for).
+- **Numbers** (scores, KPIs, dates) use `tabular-nums` so columns align; Space Mono's digits read like a retro
+  calculator/terminal, which suits the theme.
+- **Banned:** Inter, generic serifs, a second display typeface, bold/black `font-weight` values (the one heavy cut is
+  Archivo Black's own design, not a CSS weight toggle).
 
 ## 4. Component Stylings
 * **Buttons:** Pills, 44px minimum height. Primary = Charcoal Ink fill with paper text; secondary = Strong Line outline that
@@ -53,7 +63,7 @@ Zinc neutrals throughout (no warm/cool drift) with a single accent. Light theme 
   inside `overflow-x-auto` wrappers so the page body never scrolls sideways.
 - **Exam kiosk:** particle panel (5fr) beside the question and controls (6fr); stacked on mobile.
 - Full-height sections use `min-h-[100dvh]` arithmetic, never `h-screen`. No overlapping elements anywhere.
-- Below 768px everything collapses to a single column; every touch target is at least 44px.
+- Below `lg` (1024px) every split collapses to a single column; every touch target is at least 44px.
 
 ## 6. Motion & Interaction
 - Spring physics by default (`stiffness: 100, damping: 20`) for reveals; no linear easing.

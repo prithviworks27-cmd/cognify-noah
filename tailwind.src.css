@@ -10,11 +10,14 @@
 /* Design tokens — see DESIGN.md. `static` keeps every variable in the
    output so plain CSS below (and any inline var() use) can rely on them. */
 @theme static {
-    --font-sans: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
-    --font-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+    --font-sans: 'Space Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+    --font-mono: 'Space Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+    /* Neobrutalist/retro display face for h1/h2/h3 — a single heavy-weight
+       cut (there is no lighter variant to accidentally fall back to), so
+       headline punch comes from the typeface itself, not font-weight. */
+    --font-display: 'Archivo Black', 'Arial Black', sans-serif;
 
-    --color-canvas: #FAFAFA;
-    --color-canvas-deep: #EFEFF1;
+    --color-canvas: #F4EEE1;
     --color-surface: #FFFFFF;
     --color-sunken: #F4F4F5;
     --color-ink: #18181B;
@@ -42,14 +45,17 @@
     }
 
     body {
-        /* Premium-paper background: a quiet top-to-bottom depth gradient
-           (never a hue change — still zinc-only) plus a barely-there grain so
-           the canvas reads as material, not flat CSS white. Both are static:
-           no motion, no cost beyond first paint. */
+        /* Retro blueprint canvas: warm parchment (not white) under a two-tier
+           ruled grid — a fine 16px sheet under a bolder 96px sheet, both just
+           tints of ink. Reads as graph-paper/schematic, the classic
+           neobrutalist-retro-tech ground, and pairs with the mono body face.
+           Flat + static: no gradient blur, nothing animates. */
         background-color: var(--color-canvas);
         background-image:
-            radial-gradient(1200px 640px at 50% -8%, #ffffff 0%, transparent 62%),
-            linear-gradient(180deg, #ffffff 0%, var(--color-canvas) 38%, var(--color-canvas-deep) 100%);
+            repeating-linear-gradient(0deg, rgba(24, 24, 27, 0.07) 0 1px, transparent 1px 96px),
+            repeating-linear-gradient(90deg, rgba(24, 24, 27, 0.07) 0 1px, transparent 1px 96px),
+            repeating-linear-gradient(0deg, rgba(24, 24, 27, 0.035) 0 1px, transparent 1px 16px),
+            repeating-linear-gradient(90deg, rgba(24, 24, 27, 0.035) 0 1px, transparent 1px 16px);
         background-attachment: fixed;
         color: var(--color-ink);
         font-family: var(--font-sans);
@@ -58,25 +64,19 @@
         letter-spacing: 0.02em;
         overflow-x: hidden;
         -webkit-font-smoothing: antialiased;
-        position: relative;
-    }
-
-    body::before {
-        content: "";
-        position: fixed;
-        inset: 0;
-        z-index: -1;
-        pointer-events: none;
-        opacity: 0.045;
-        mix-blend-mode: multiply;
-        background-repeat: repeat;
-        background-size: 160px 160px;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
     }
 
     h1, h2, h3, h4 {
         letter-spacing: 0.02em;
         text-wrap: balance;
+    }
+
+    /* Display headings only — not h3/h4 carrying .eyebrow (those are small
+       mono labels, e.g. "Assigned oral papers", and stay in the body font;
+       Archivo Black at 11px with heavy tracking would just be illegible). */
+    h1, h2, h3:not(.eyebrow), h4:not(.eyebrow) {
+        font-family: var(--font-display);
+        letter-spacing: normal;
     }
 
     ::selection {
