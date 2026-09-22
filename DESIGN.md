@@ -13,7 +13,9 @@ particle intelligence lives in a framed panel beside the copy, never behind or u
 ## 2. Color Palette & Roles
 Zinc neutrals throughout (no warm/cool drift) with a single accent. Light theme only.
 
-- **Canvas Paper** (#FAFAFA) — page background
+- **Canvas Paper** (#FAFAFA, deepening to #EFEFF1) — page background: a quiet top-to-bottom gradient (white at the
+  header, settling to Canvas Paper, deepest at the footer) plus a 4.5%-opacity grain layer, so the canvas reads as
+  material rather than flat CSS white. Never a hue shift — the gradient stays inside the zinc family.
 - **Pure Surface** (#FFFFFF) — panels, modal, dropdowns
 - **Sunken Wash** (#F4F4F5) — inputs, transcript well, table hover
 - **Charcoal Ink** (#18181B) — primary text, primary button fill (Zinc-900 depth, never pure black)

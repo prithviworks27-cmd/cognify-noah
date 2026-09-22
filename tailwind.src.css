@@ -14,6 +14,7 @@
     --font-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
     --color-canvas: #FAFAFA;
+    --color-canvas-deep: #EFEFF1;
     --color-surface: #FFFFFF;
     --color-sunken: #F4F4F5;
     --color-ink: #18181B;
@@ -41,7 +42,15 @@
     }
 
     body {
-        background: var(--color-canvas);
+        /* Premium-paper background: a quiet top-to-bottom depth gradient
+           (never a hue change — still zinc-only) plus a barely-there grain so
+           the canvas reads as material, not flat CSS white. Both are static:
+           no motion, no cost beyond first paint. */
+        background-color: var(--color-canvas);
+        background-image:
+            radial-gradient(1200px 640px at 50% -8%, #ffffff 0%, transparent 62%),
+            linear-gradient(180deg, #ffffff 0%, var(--color-canvas) 38%, var(--color-canvas-deep) 100%);
+        background-attachment: fixed;
         color: var(--color-ink);
         font-family: var(--font-sans);
         font-size: 0.9375rem;
@@ -49,6 +58,20 @@
         letter-spacing: 0.02em;
         overflow-x: hidden;
         -webkit-font-smoothing: antialiased;
+        position: relative;
+    }
+
+    body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        opacity: 0.045;
+        mix-blend-mode: multiply;
+        background-repeat: repeat;
+        background-size: 160px 160px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
     }
 
     h1, h2, h3, h4 {
